@@ -10,6 +10,8 @@ math: mathjax
 headingDivider: 1
 ---
 
+# Necessary and useful packages and software
+
 # Installion: **RSelenium**
 
 Install RSelenium: [Video](https://www.youtube.com/watch?v=GnpJujF9dBw)
@@ -52,10 +54,12 @@ system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)
 
 # Installion: **Python Anaconda**
 
-- Annaconda is a free and open-source distribution of the Python programming language
+- Anaconda is a free and open-source distribution of the Python programming language
 - includes also Jupyter Notebooks, Conda (Package Manager) and over 1500 pre-installed data science related packages
-- [Download Anaconda](https://www.anaconda.com/download/) (extensive and effortless) OR
-- [Download Miniconda](https://docs.anaconda.com/free/miniconda/) (slim and customizable)
+- will be useful to interact with LLM models with Python (from RStudio)
+Decide which one to download:
+- [Anaconda](https://www.anaconda.com/download/success) (extensive and effortless)
+- [Miniconda](https://docs.anaconda.com/free/miniconda/) (slim and customizable)
 
 
 # Code Editor: **VSCode**
