@@ -1,8 +1,8 @@
 ---
 marp: true
-title: Introduction to Workflow and Git(Hub)
+title: Introduction to Git(Hub) and Workflow
 _class: invert
-footer: SICSS Berlin - Day 1 - 2023/07/03
+footer: SICSS Berlin - Day 1 - 2024/07/08
 size: 16:9
 paginate: true
 _paginate: false
@@ -10,7 +10,7 @@ math: mathjax
 headingDivider: 1
 ---
 
-# Introduction to Workflow and Git(Hub)
+# Introduction to Git(Hub) and Workflow
 
 <!--
 - first day: go one with more formal and technical stuff
@@ -20,73 +20,6 @@ headingDivider: 1
 2. small advertisement for using a code editor 
 3. using git and github, getting course material and work together
 -->
-
-
-# Best practice: **Folder and file structure**
-
-1. use separate folders for scripts, data, output, and reports
-2. separate raw data files from processed data
-3. use clear and consistent names for script, data, and output files:
-	- numbering, lowercase, connect words with underscores or hyphens
-	- if date is necessary, put at the end, sort by YYYYMMDD
-4. multiple script files for different (sub) tasks (max 100 lines)
-
-<!--
-- different styles and also personnel preferences
-- just some recommendations from our own work experience
-- become really handy when collaborating with other's
-- in the end: needs to work for you, and your collaborates
-- use pre- and suffixes
--->
-
-# Best practice: **Efficient R scripts**
-
-1) define libraries, default variables, source code at top of script
-2) comment and structure sections (# ---- headline ----)
-3) use pipe operator |> (magritter: %>%) for combining functions
-4) use indentations and spaces for readability
-5) max line length of 80 characters
-6) [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) - use lists, lapply, vectorization, and functions
-7) use relative paths for data and output
-8)  avoid hard coded subsetting and indexing
-
-
-# Best practice: **Resources**
-
-- [Best Coding Practices for R](https://bookdown.org/content/d1e53ac9-28ce-472f-bc2c-f499f18264a3/folder.html)
-- [Structuring R projects](https://www.r-bloggers.com/2018/08/structuring-r-projects/)
-- [R Best Practices](https://kdestasio.github.io/post/r_best_practices/)
-- [Tips for organising your R code](https://www.r-bloggers.com/2023/01/tips-for-organising-your-r-code/)
-- [Nice R Code](https://nicercode.github.io/)
-- [Repeating things: looping and the apply family](https://nicercode.github.io/guides/repeating-things/)
-
-
-# Code Editor: **VSCode**
-
-![h:530 drop-shadow:0,10px,20px,rgba(0,0,0,.4)](img/r_vscode.png)
-
-
-# Code Editor: **Benefits**
-
-- Swiss army knife for coding and file management
-  - search (and replace) in whole project folder
-  - side-by-side editor windows
-  - better file and folder management
-  - customizable (with extensions)
-- multiple languages supported (e.g. R, Python, LaTeX, Markdown)
-- easy Git(Hub) integration for better workflow
-- with R:
-  - run multiple R Sessions in parallel
-  - scripts still editable if process is busy
-
-
-# Code Editor: **Resources**
-
-- https://code.visualstudio.com/docs/languages/r
-- https://renkun.me/2019/12/11/writing-r-in-vscode-a-fresh-start/
-- https://schiff.co.nz/blog/r-and-vscode/
-- https://rolkra.github.io/R-VSCode/
-
 
 # Git: **Idea and concept**
 
@@ -202,9 +135,9 @@ By using branches, several developers are able to work in parallel on the same p
 
 - for GitHub remote commands: Account and personal access token needed
 - Settings $\rightarrow$ Developer Setting $\rightarrow$ Personal Access Tokens $\rightarrow$ Generate new token
-- on local machine enter username and PAT every time, or:
-  1. `git config credential.helper store`
-  2. use VSCode
+- on local machine enter username and PAT every time, or store:
+  1. in CLI: `git config credential.helper store`
+  2. in RStudio: `credentials::set_github_pat("YourPAT")`
 
 
 # GitHub: **.gitignore**
@@ -214,7 +147,7 @@ By using branches, several developers are able to work in parallel on the same p
 **Use case:** sensitive data; temp and old files; big data files; outputs
   $\rightarrow$ usually track just plain text files (e.g. R scripts, TeX source, etc.) 
 
-**Get startet:** 2 approaches ([helpful online tool creates content automatically](https://www.toptal.com/developers/gitignore))
+**Get startet:** 2 approaches ([online tool creates .gitignore content for you](https://www.toptal.com/developers/gitignore))
 
 ```
 /data/old
@@ -226,6 +159,14 @@ passworts.txt
 !/scripts
 ```
 
+# Git: **In RStudio**
+![bg left:40% 90%](img/stage_step_4.png)
+
+1. you need to start a new project in RStudio (clone from repository):
+File $\rightarrow$ New Project $\rightarrow$ Version Control $\rightarrow$ Git $\rightarrow$ Add URL and Folder
+2. new in upper right corner of the screen: **Git**
+3. add, commit and push your changes directly in RStudio to GitHub
+
 # Git: **Resources**
 
 - [Intro to Git, for the Social Scientist](https://www.nimirea.com/blog/2019/05/10/git-for-social-scientists/)
@@ -233,6 +174,7 @@ passworts.txt
 - [Git for Students in the Social Sciences](https://www.shirokuriwaki.com/programming/kuriwaki_github_handout.pdf)
 - [GitHub - The Perks of Collaboration](https://cosimameyer.com/post/git-the-perks-of-collaboration-and-version-control/)
 - [AI tool suggesting git command](https://www.gitfluence.com/)
+- [Configure GitHub for Rstudio](https://gist.github.com/Z3tt/3dab3535007acf108391649766409421)
 
 
 # Exercise: **Course material**
@@ -240,10 +182,49 @@ passworts.txt
 ![bg left:40% 90%](img/github_setup.png)
 
 0. find in groups
-1. install git
-2. create a GitHub account
-3. become collaborator (tell user name)
-4. clone our course material [**repository**](https://www.github.com/StefanMunnes/SICSS_Berlin_2023)
-5. add a personal folder and test file
-6. push this changes to the remote repository
-7. pull changes of the other participants
+1. install git & create a GitHub account
+2. become collaborator (tell me your username)
+3. clone our course material [**repository**](https://www.github.com/StefanMunnes/SICSS_Berlin_2024)
+4. add a personal folder and test file in exercises
+5. push this changes to the remote repository
+6. pull changes of the other participants
+
+
+# Best practice: **Folder and file structure**
+
+1. use separate folders for scripts, data, output, and reports
+2. if to many files (~10), use subfolders
+3. separate raw data files from processed data
+4. use clear and consistent names for script, data, and output files:
+	- numbering, lowercase, connect words with underscores or hyphens
+	- if date is necessary, put at the end, sort by YYYYMMDD
+5. multiple script files for different (sub) tasks (max 100 lines)
+
+<!--
+- different styles and also personnel preferences
+- just some recommendations from our own work experience
+- become really handy when collaborating with other's
+- in the end: needs to work for you, and your collaborates
+- use pre- and suffixes
+-->
+
+# Best practice: **Efficient R scripts**
+
+1) define libraries, default variables, source code at top of script
+2) comment and structure sections (# ---- headline ----)
+3) use pipe operator |> (magritter: %>%) for combining functions
+4) use indentations and spaces for readability
+5) max line length of 80 characters
+6) [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) - use lists, lapply, vectorization, and functions
+7) use relative paths for data and output
+8)  avoid hard coded subsetting and indexing
+
+
+# Best practice: **Resources**
+
+- [Best Coding Practices for R](https://bookdown.org/content/d1e53ac9-28ce-472f-bc2c-f499f18264a3/folder.html)
+- [Structuring R projects](https://www.r-bloggers.com/2018/08/structuring-r-projects/)
+- [R Best Practices](https://kdestasio.github.io/post/r_best_practices/)
+- [Tips for organising your R code](https://www.r-bloggers.com/2023/01/tips-for-organising-your-r-code/)
+- [Nice R Code](https://nicercode.github.io/)
+- [Repeating things: looping and the apply family](https://nicercode.github.io/guides/repeating-things/)

@@ -1,8 +1,7 @@
+/* 
 
-sessions/day2_webdata/*
-sessions/day3_data_cleanup
-sessions/day4_text_analysis_1
-sessions/day5_text_analysis_2
+!/exercises
+!/sessions
+!/lectures
 
-.Rproj.user/
-SICSS_2024.Rproj
+!sicss2024_schedule.pdf
