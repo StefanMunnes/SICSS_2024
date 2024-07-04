@@ -57,6 +57,7 @@ system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)
 - Anaconda is a free and open-source distribution of the Python programming language
 - includes also Jupyter Notebooks, Conda (Package Manager) and over 1500 pre-installed data science related packages
 - will be useful to interact with LLM models with Python (from RStudio)
+
 Decide which one to download:
 - [Anaconda](https://www.anaconda.com/download/success) (extensive and effortless)
 - [Miniconda](https://docs.anaconda.com/free/miniconda/) (slim and customizable)
