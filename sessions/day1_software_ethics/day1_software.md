@@ -1,6 +1,6 @@
 ---
 marp: true
-title: Introduction to Git(Hub) and Workflow
+title: Introduction to useful software and workflows
 _class: invert
 footer: SICSS Berlin - Day 1 - 2024/07/08
 size: 16:9
@@ -10,7 +10,8 @@ math: mathjax
 headingDivider: 1
 ---
 
-# Introduction to Git(Hub) and Workflow
+
+# Introduction to useful software and workflows
 
 <!--
 - first day: go one with more formal and technical stuff
@@ -188,6 +189,103 @@ File $\rightarrow$ New Project $\rightarrow$ Version Control $\rightarrow$ Git $
 4. add a personal folder and test file in exercises
 5. push this changes to the remote repository
 6. pull changes of the other participants
+
+
+# Installation: **Quarto**
+
+On Tuesday and Wednesday, we are going to use Quarto Markdown Documents, instead of R scripts. Quarto should be pre-installed in RStudio. Please check whether it is by opening the file "day1_r_git/quarto_testfile.qmd" with RStudio. 
+
+Also make sure that you see the "Source" and "Visual" buttons in the top left (see image).
+
+![](img/quarto_selection.png)
+
+If it is not installed, please update your RStudio version!
+
+
+# Installation: **RSelenium**
+
+You will need to follow the steps described in this [Video](https://www.youtube.com/watch?v=GnpJujF9dBw).
+
+For Everyone:
+
+- Chromedrivers from RSelenium are outdated, download an up to date chromedriver yourself. Check the version of your Chrome browser, and then download the matching chromedriver from [here](https://googlechromelabs.github.io/chrome-for-testing/). See this [video](https://www.youtube.com/watch?v=BnY4PZyL9cg) for a step-by-step guide. 
+
+For Apple users: 
+
+- When selecting the "Architecture" for the Java SDK on [Azul](https://www.azul.com/downloads/), you need to know which version to choose. You find that out by pressing the Apple button and selecting "About this Mac". With M1 or M2, select "Arm 64 bit", or with Intel, select "x86 64 bit". To find the libray: Finder $\rightarrow$ Go to (top of screen) $\rightarrow$ Option $\rightarrow$ Library
+
+---
+
+```r
+install.packages(c("RSelenium", "wdman", "netstat", "binman"))
+
+library(RSelenium)
+library(wdman)
+
+selenium()
+
+selenium_object <- selenium(retcommand = TRUE,
+                            check = FALSE)
+```
+---
+
+```r
+binman::list_versions("chromedriver")
+
+# The following command should open a browser window (you might need to adjust the version!)
+remote_driver <- rsDriver(browser = "chrome",
+                          chromever = "126.0.6478.127",
+                          verbose = FALSE,
+                          port = free_port())
+
+                       
+# close the server
+remote_driver$server$stop()
+
+# If you start it a few times, but never close the server there might be no empty port left.
+# You can run the following to kill all java processes
+system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)
+```
+
+If you manage to start your chrome browser with the above script, RSelenium is installed properly.
+
+
+# Installion: **Python Anaconda**
+
+- Anaconda is a free and open-source distribution of the Python programming language
+- includes also Jupyter Notebooks, Conda (Package Manager) and over 1500 pre-installed data science related packages
+- will be useful to interact with LLM models with Python (from RStudio)
+
+Decide which one to download:
+- [Anaconda](https://www.anaconda.com/download/success) (extensive and effortless)
+- [Miniconda](https://docs.anaconda.com/free/miniconda/) (slim and customizable)
+
+
+# Code Editor: **VSCode**
+
+![h:530 drop-shadow:0,10px,20px,rgba(0,0,0,.4)](img/r_vscode.png)
+
+
+# Code Editor: **Benefits**
+
+- Swiss army knife for coding and file management
+  - search (and replace) in whole project folder
+  - side-by-side editor windows
+  - better file and folder management
+  - customizable (with extensions)
+- multiple languages supported (e.g. R, Python, Notebooks, LaTeX, Markdown)
+- easy Git(Hub) integration for better workflow
+- with R:
+  - run multiple R Sessions in parallel
+  - scripts still editable if process is busy
+
+
+# Code Editor: **Resources**
+
+- https://code.visualstudio.com/docs/languages/r
+- https://renkun.me/2019/12/11/writing-r-in-vscode-a-fresh-start/
+- https://schiff.co.nz/blog/r-and-vscode/
+- https://rolkra.github.io/R-VSCode/
 
 
 # Best practice: **Folder and file structure**
