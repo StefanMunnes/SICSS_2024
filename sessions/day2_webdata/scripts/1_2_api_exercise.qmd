@@ -53,7 +53,7 @@ library(httr)
 library(jsonlite)
 ```
 
-## Work on the tasks here:
+## Work on the tasks below or in your own R script:
 
 Test a single API call, before you use it an a loop/apply function!
 
