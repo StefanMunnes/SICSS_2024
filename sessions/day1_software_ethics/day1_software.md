@@ -261,6 +261,16 @@ Decide which one to download:
 - [Miniconda](https://docs.anaconda.com/free/miniconda/) (slim and customizable)
 
 
+# Installation: **Transformers**
+Install python package [transformers](https://huggingface.co/docs/transformers/index) with conda package manager:
+
+1. open anaconda/miniconda prompt
+2. `conda install transformers`
+3. check  installed packages: `conda list`
+
+If you use Anaconda, you can also try the GUI "Anaconda Navigator".
+
+
 # Code Editor: **VSCode**
 
 ![h:530 drop-shadow:0,10px,20px,rgba(0,0,0,.4)](img/r_vscode.png)
