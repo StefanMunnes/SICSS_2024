@@ -1,4 +1,4 @@
-# SICSS 2023 Berlin
+# SICSS 2024 Berlin
 
 The Summer Institute will be held at the [Berlin Social Science Center (WZB)](https://www.wzb.eu).
 
