@@ -16,10 +16,10 @@ Find further information about the key note speakers and their talks on our [spe
 | 11.00-12.30 | Collaborating using Git | API                   | Data wrangling    | Exercise               | Exercise               |
 | Room:       | B001                    | B001                  | A310              | B001                   | B001                   |
 | 12.30-13.30 | Lunch break             | Lunch break           | Lunch break       | Lunch break            | Lunch break            |
-| 13.30-14.45 | Ethics with Chaewon Yun | Web scraping          | Data wrangling    | Exercise               | Projects: Team finding |
+| 13.30-14.45 | Software setup          | Web scraping          | Data wrangling    | Exercise               | Projects: Team finding |
 | Room:       | B001                    | B001                  | A310              | B001                   | B001                   |
 | 14.45-15.00 | Coffee break            | Coffee break          |                   | Coffee break           |                        |
-| 15.00-16.30 | Software setup          | Speaker: Clara Bersch |                   | Speaker: Christian Rau |                        |
+| 15.00-16.30 | Ethics with Chaewon Yun | Speaker: Clara Bersch |                   | Speaker: Christian Rau |                        |
 | Room:       | B001                    | B001                  |                   | B001                   |                        |
 | 16.30 +     | Welcome PIZZA           |                       |                   |                        |                        |
 
