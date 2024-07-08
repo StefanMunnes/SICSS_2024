@@ -1,3 +1,5 @@
-RG testing 
-@rg@someone.elses.computer
-gorwa.ca
+# Robert gorwa
+## WZB Berlin
+
+Mastodon: @rg@someone.elses.computer
+Website: www.gorwa.ca
