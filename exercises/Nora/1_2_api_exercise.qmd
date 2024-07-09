@@ -88,7 +88,7 @@ httr_members <- GET(url = "https://api.congress.gov/v3/member",
 httr_members
 
 # Extract the contents as JSON format/lists
-members <- content(httr_members, type='application/json') 
+#members <- content(httr_members, type='application/json') 
 
 # We extracted three elements, but we only need the bills list
 members <- content(httr_members, type='application/json')$members
@@ -96,14 +96,15 @@ members <- content(httr_members, type='application/json')$members
 
 # With purr package
 #library(purrr)
-#members <- map(members, purrr::flatten)
-#members <- map(members, purrr::flatten)
+members <- map(members, purrr::flatten)
+members <- map(members, purrr::flatten)
+members <- map(members, purrr::flatten)
 
 #using base R 
 flatten_list <- function(x) {
   do.call(c, x) # the c stands for combine and is a base R function, see ?c
 }
-members <- lapply(members, flatten_list)
+#members2 <- lapply(members, flatten_list)
 members <- lapply(members, flatten_list)
 
 # bind_rows
@@ -111,48 +112,38 @@ df_members <- bind_rows(members)
 ```
 
 ```{r}
-#loop 
-base_url <- "https://api.congress.gov/v3/member"
-api_key <- Sys.getenv("congress_key")
 
-# Initialize the offset and limit
+members <- data.frame()
 offset <- 0
-limit <- 250
-all_members <- list()
 
-# Loop to get all members
 repeat {
-  response <- GET(url = base_url,
-                  query = list(format = "json",
-                               limit = limit,
-                               offset = offset,
-                               sort = "updateDate+desc",
-                               api_key = api_key))
+  cat("offset=", offset, "\n")
   
-  content <- content(response, as = "text", encoding = "UTF-8")
-  json_data <- fromJSON(content)
+  Sys.sleep(1)
   
-  members <- json_data$members
+  response <- GET(
+    url = "https://api.congress.gov/v3/member",
+    query = list(format = "json", 
+                 limit = 250, 
+                 offset = offset, 
+                 api_key = Sys.getenv("congress_key"))
+  )
   
-  all_members <- c(all_members, members)
+  member <- fromJSON(content(response, 
+                             as = "text", 
+                             encoding = "UTF-8"), 
+                     flatten = TRUE)$member
   
-  # Extract the contents as JSON format/lists
-  all_members <- content(httr_members, type='application/json') 
-
-  # We extracted three elements, but we only need the bills list
-  all_members <- content(httr_members, type='application/json')$members
-  
-  if (length(members) < limit) {
+  if (length(member) == 0) {
+    message("No more members")
     break
   }
   
+  members <- bind_rows(members, as.data.frame(member))
   offset <- offset + 250
 }
 
-
-all_members <- map(all_members, purrr::flatten)
-
-all_members <- bind_rows(all_members)
+saveRDS(members, file = "C:/Users/chirikure/Desktop/Rprojects/SICSS_2024/exercises/Nora/congress_members.Rds")
 
 ```
 
@@ -161,5 +152,39 @@ all_members <- bind_rows(all_members)
 ```{r}
 #Get the congressional records from 2020 to 2024. Save the resulting data on your hard drive.
 
+# Congressional records starting 2020 (only includes URLs to records)
+get_congr_records <- function(year, congr_records=data.frame()) {
+  offset <- 0
+  repeat {
+    print(paste(year, "offset =", offset))
+    Sys.sleep(1)
+    
+    response <- GET("https://api.congress.gov/", 
+                     path = "v3/congressional-record",
+                     query = list(format = "json",
+                                  y = year,
+                                  limit = 250,
+                                  offset = offset,
+                                  api_key = Sys.getenv("congress_key")))
+    
+    record <- fromJSON(content(response, 
+                               as = "text",
+                               encoding = "UTF-8"), 
+                       flatten = TRUE)$Results$Issues
+    
+    if (length(record)==0) {
+      print(paste("No more congressional records in", year))
+      break
+    }
+    
+    congr_records <- bind_rows(congr_records, as.data.frame(record))
+    
+    offset <- offset + 250
+  }
+  return (congr_records)  
+}
 
+congr_records <- bind_rows(lapply(2020:2024, get_congr_records))
+
+saveRDS(congr_records, file = "../data/congress_record_urls.Rds")
 ```
