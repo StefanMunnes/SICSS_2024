@@ -45,12 +45,17 @@ Restart R, then you can access the key via `Sys.getenv("congress_key")`. Try it:
 Sys.getenv("congress_key")
 ```
 
-### Packages your will (probably) need:
+### Packages and Functions you will (probably) need:
 
 ```{r}
 library(tidyverse)
 library(httr)
 library(jsonlite)
+library(purrr)
+
+flatten_list <- function(x) {
+  do.call(c, x) # the c stands for combine and is a base R function, see ?c
+}
 ```
 
 ## Work on the tasks below or in your own R script:
@@ -61,11 +66,81 @@ Test a single API call, before you use it an a loop/apply function!
 
 ```{r}
 
+# Conducting an API pull from the congress website for MEMBERS
+httr_congress <- GET(url = "https://api.congress.gov/v3/member",
+                  query = list(format = "json",
+                          limit = 250,
+                          offset = 0,
+                           sort = "updateDate+desc",
+                           api_key = Sys.getenv("congress_key")))
+
+# Extract the content
+members <- content(httr_congress, type='application/json')$members
+
+# Flatten the data to transfer to a dataframe 
+members <- lapply(members, flatten_list) 
+members <- lapply(members, flatten_list)
+members <- lapply(members, flatten_list)
+  # There are three layers, so I just ran it three times. 
+
+# Turn into a dataframe
+df_members <- bind_rows(members)
 ```
 
 **Implementation:**
 
 ```{r}
+
+# Goals: 
+  # 1. Run a loop for 250 congresspeople to get each list of 250.  
+  # 2. Combine lists. 
+  # 3. Stop combining when newly pulled list is empty. // Ready for this! 
+
+
+
+for (i in 1:n) {
+    # ... make some data
+    dat <- data.frame(x = rnorm(10), y = runif(10))
+    dat$i <- i  # maybe you want to keep track of which iteration produced it?
+    datalist[[i]] <- dat # add it to your list
+}
+
+
+
+repeat {  
+
+random <- runif(100)
+Sys.sleep(1+runif(1))
+  
+# Conducting an API pull from the congress website for MEMBERS
+httr_congress <- GET(url = "https://api.congress.gov/v3/member",
+                  query = list(format = "json",
+                          limit = 250,
+                          offset = 1,
+                           sort = "updateDate+desc",
+                           api_key = Sys.getenv("congress_key")))
+
+# Extract the content
+members <- content(httr_congress, type='application/json')$members
+
+# Flatten the data to transfer to a dataframe 
+members <- lapply(members, flatten_list) 
+members <- lapply(members, flatten_list)
+members <- lapply(members, flatten_list)
+  # There are three layers, so I just ran it three times. 
+
+# Turn into a dataframe
+df_members <- bind_rows(members)
+}
+
+dplyr::bind_rows(df_members, df_members_run)
+
+count <- nrow(df_members)
+ if(count == 250) {  
+    break  
+   }  
+}  
+
 
 ```
 

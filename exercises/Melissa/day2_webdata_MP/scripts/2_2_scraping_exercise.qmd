@@ -47,18 +47,7 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 -   Text:
 
 ```{r}
-#Titel: 
-# html_node(xpath = "//*[(@id = "article-header")]//*[contains(concat( " ", @class, " " ), concat( " ", "self-baseline", " " ))]")
 
-# Authors:
-# html_node(xpath = "//*[contains(concat( " ", @class, " " ), concat( " ", "inline-block", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "font-bold", " " ))]")
-
-# Date:
-# html_node(xpath = "//time")
-
-# Text:
-# html_node(xpath = "//>//*[contains(concat( " ", @class, " " ), concat( " ", "tracking-0\.5px", " " ))]")
-  
 ```
 
 ## Task 3
@@ -67,15 +56,6 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 
 ```{r}
 
-# https://time.com/6127193/supreme-court-reform-expansion/
-  
-# https://time.com/4991839/masterpiece-cakeshop-supreme-court-gay-discrimination/
-  
-# https://time.com/6993706/supreme-court-allows-cities-to-enforce-bans-on-homeless-people-sleeping-outside/
-  
-# https://time.com/6994189/supreme-court-donald-trump-presidential-immunity-decision/
-
-
 ```
 
 ## Task 4
@@ -83,26 +63,5 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 We basically combine Task 2 and 3 to solve this one.
 
 ```{r}
-search_website <- read_html("https://time.com/search/?q=supreme+court")
-website <- read_html("https://time.com/6127193/supreme-court-reform-expansion/")
-
-site1 <- tibble(
-  title = website %>%
-    html_nodes(".self-baseline") %>%
-    html_text(),
-  
-  author = website %>%
-    html_nodes(".inline-block .font-bold") %>%
-    html_text(),
-
-  date = website %>%
-    html_node("time") %>%
-    html_text(),
-    
-  body = website %>%
-    html_nodes("> .tracking-0\.5px") %>%
-    html_text(),
-)
-
 
 ```
