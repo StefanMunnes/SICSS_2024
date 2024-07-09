@@ -20,10 +20,10 @@ Sys.getenv("congress_key")
 
 
 # Look up the URL and the queries
-https://api.congress.gov/v3/bill?api_key=[INSERT_KEY]
+#https://api.congress.gov/v3/bill?api_key=[INSERT_KEY]
 
 # offset is important because of the limit. Within your search criteria there might be
-# more results, in that case you have to itterate through offset (offset = 0, offset = 250, offset = 500 etc.)
+# more results, in that case you have to iterate through offset (offset = 0, offset = 250, offset = 500 etc.)
 # This is important, because this is relevant for most APIs, but is solved differently.
 
 
