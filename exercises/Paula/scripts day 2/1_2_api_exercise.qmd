@@ -99,7 +99,7 @@ members <- lapply(members_list, flatten_list)
 # bind_rows
 df_members <- bind_rows(members)
 df_members_unique <- df_members |> 
-                      distinct(name)
+                      distinct(name, .keep_all = TRUE)
 ```
 
 **Implementation as a loop or function:**
@@ -108,6 +108,7 @@ df_members_unique <- df_members |>
 # as a loop:
 
 offset <- 0
+results <- as.data.frame(NULL)
 
 # try to get the dtaa, put it in a dataframe, bind the next one together, stop when they are the same length
 
@@ -129,10 +130,17 @@ while(TRUE) {
     members <- map(members_list, purrr::flatten)
     
     # turn into dataframe
-  
-  if (condition) { #content = zero?
-    break
-  }
+    # bind_rows
+        df_members <- bind_rows(members)
+          df_members_unique <- df_members |> 
+                      distinct(name, .keep_all = TRUE)
+          
+      # add onto results dataframe
+    results <- rbind(results, df_members_unique)
+        
+  # if (condition) { #content = zero?
+  #   break
+  # }
   
   offset <- offset + 250
   
