@@ -2,11 +2,18 @@ library(tidyverse)
 library(rvest)
 library(stringi)
 
-html = read_html("https://time.com/6995779/france-macron-disastrous-election/")
+html = read_html("https://time.com/search/?q=election&page=2")
 
-#urls <- html %>%
-#  html_nodes("a.media-img") %>%
-#  html_element("href")
+urls <- html %>%
+  html_nodes(".headline") %>%
+  html_elements("a") %>%
+  html_attr("href")
+
+df.urls <- tibble(urls)
+
+pg_nums <- c[1:5]
+
+
 
 title <- html %>%
   html_nodes("header") %>%
