@@ -31,7 +31,7 @@ website <- read_html("https://en.wikipedia.org/wiki/Computational_social_science
 title <- website %>%
   html_node(".mw-page-title-main") %>%
   html_text()
-
+# Paste collapses separate strings into one
 text <- website %>%
   html_nodes("ul:nth-child(9) li , p") %>%
   html_text() %>%
