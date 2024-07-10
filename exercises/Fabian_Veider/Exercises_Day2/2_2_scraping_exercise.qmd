@@ -35,19 +35,48 @@ library(stringi)
 
 ## Task 1
 
-I searched for "YOUR SEARCH TERM HERE" on https://time.com/.
+I searched for "climate" on https://time.com/.
 
 ## Task 2
 
 This task is basically the testing phase for task 4. You go to the webpage, in this case one example article, and find the CSS selectors that work for what you need and note them down.
 
--   Title:
--   Authors:
--   Date:
--   Text:
+-   Title: What Can I Do to Fight Climate Change? \| TIME
+-   Authors: Katharine Wilkinson
+-   Date: See climate_overview
+-   Text: See climate_overview
 
 ```{r}
+# URL of the article
+url <- "https://time.com/6071765/what-can-i-do-to-fight-climate-change/"
 
+# Read the HTML content of the webpage
+webpage <- read_html(url)
+climate_overview <- tibble(
+  # Extract the title
+  title = webpage %>%
+    html_node("#article-header .self-baseline") %>%
+    html_text(trim = TRUE),
+  
+  # .inline-block .font-bold
+  # Extract the author
+  author = webpage %>%
+    html_node(".inline-block .font-bold") %>%
+    html_text(trim = TRUE),
+  
+  # Extract the date
+  date = webpage %>%
+    html_node("time") %>%
+    html_attr("datetime"),
+  
+  # Extract the body
+  body = webpage %>%
+    #html_nodes(".article-body p") %>%
+    html_nodes("#article-main") %>%
+    #html_nodes(".self-baseline")
+    html_text(trim = TRUE) %>%
+    paste(collapse = " ")
+)
 ```
 
 ## Task 3
@@ -55,7 +84,64 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 *Hint: Perform a manual search on the webpage, click through the pages, and observe how the URL changes.*
 
 ```{r}
+# Function to scrape an article and extract title, author, date, and body
+scrape_article <- function(url) {
+  article_page <- read_html(url)
+  
+  title <- article_page %>%
+    #html_node("h1.headline") %>%
+    html_node("#article-header .self-baseline") %>%
+    html_text(trim = TRUE)
+  
+  author <- article_page %>%
+    html_node(".inline-block .font-bold") %>%
+    html_text(trim = TRUE)
+  
+  date <- article_page %>%
+    html_node("time") %>%
+    html_attr("datetime")
+  
+  body <- article_page %>%
+    html_nodes("#article-main") %>%
+    html_text(trim = TRUE) %>%
+    paste(collapse = " ")
+  
+  tibble(
+    title = title,
+    author = author,
+    date = date,
+    body = body
+  )
+}
 
+# Function to extract article URLs from a search results page
+scrape_search_results <- function(search_url) {
+  search_page <- read_html(search_url)
+  
+  article_urls <- search_page %>%
+    html_nodes(".media-heading a") %>%
+    html_attr("href") %>%
+    paste0("", .)
+  
+  return(article_urls)
+}
+
+# Loop through the first 5 pages of search results
+for (i in 1:5) {
+  search_url <- paste0("https://time.com/search/?q=climate&page=", i)
+  print(paste("Scraping search results page:", search_url))
+  
+  # Get article URLs from the search results page
+  article_urls <- scrape_search_results(search_url)
+  
+  # Loop through each article URL and scrape the details
+  for (url in article_urls) {
+    print(paste("Scraping article:", url))
+    # Add a delay to prevent hitting the rate limit
+    Sys.sleep(1)  
+  }
+  Sys.sleep(1)
+}
 ```
 
 ## Task 4
@@ -63,5 +149,31 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 We basically combine Task 2 and 3 to solve this one.
 
 ```{r}
+# List to store all articles
+all_articles <- list()
+
+# Loop through the first 5 pages of search results
+for (i in 1:5) {
+  search_url <- paste0("https://time.com/search/?q=climate&page=", i)
+  print(paste("Scraping search results page:", search_url))
+  
+  # Get article URLs from the search results page
+  article_urls <- scrape_search_results(search_url)
+  
+  # Loop through each article URL and scrape the details
+  for (url in article_urls) {
+    print(paste("Scraping article:", url))
+    article_details <- scrape_article(url)
+    all_articles <- append(all_articles, list(article_details))
+    Sys.sleep(2)
+  }
+  Sys.sleep(2)
+}
+
+# Combine all articles into a single tibble
+combined_articles <- bind_rows(all_articles)
+
+# View the combined data frame
+print(combined_articles)
 
 ```
