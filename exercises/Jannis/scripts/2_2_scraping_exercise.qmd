@@ -1,0 +1,108 @@
+---
+title: "Web Scraping Exercise"
+date: July 9, 2024
+format: 
+  html:
+    embed-resources: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Tasks
+
+0.  Get selector gadget: <https://selectorgadget.com/>
+1.  Search for a topic you find interesting using the search function on <https://time.com/>
+2.  Select one of the articles from the search results and scrape *title, author, date, and body* of that article.
+3.  Scrape the URLs of all five pages of search results
+4.  Now scrape title, author, date, and body of all of those articles.
+
+-   *NOTE: The result should be in a data frame with five columns (title, author, date, body, url).*
+-   *NOTE: Tomorrow we will learn how to clean the text data.*
+-   *NOTE: Don't forget to include a time delay between each request to the server!*
+
+## Packages your will (probably) need:
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(stringi)
+```
+
+## Task 1
+
+I searched for "YOUR SEARCH TERM HERE" on https://time.com/.
+
+## Task 2
+
+This task is basically the testing phase for task 4. You go to the webpage, in this case one example article, and find the CSS selectors that work for what you need and note them down.
+
+-   Title:
+-   Authors:
+-   Date:
+-   Text:
+
+```{r}
+#Titel: 
+# html_node(xpath = "//*[(@id = "article-header")]//*[contains(concat( " ", @class, " " ), concat( " ", "self-baseline", " " ))]")
+
+# Authors:
+# html_node(xpath = "//*[contains(concat( " ", @class, " " ), concat( " ", "inline-block", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "font-bold", " " ))]")
+
+# Date:
+# html_node(xpath = "//time")
+
+# Text:
+# html_node(xpath = "//>//*[contains(concat( " ", @class, " " ), concat( " ", "tracking-0\.5px", " " ))]")
+  
+```
+
+## Task 3
+
+*Hint: Perform a manual search on the webpage, click through the pages, and observe how the URL changes.*
+
+```{r}
+
+# https://time.com/6127193/supreme-court-reform-expansion/
+  
+# https://time.com/4991839/masterpiece-cakeshop-supreme-court-gay-discrimination/
+  
+# https://time.com/6993706/supreme-court-allows-cities-to-enforce-bans-on-homeless-people-sleeping-outside/
+  
+# https://time.com/6994189/supreme-court-donald-trump-presidential-immunity-decision/
+
+
+```
+
+## Task 4
+
+We basically combine Task 2 and 3 to solve this one.
+
+```{r}
+search_website <- read_html("https://time.com/search/?q=supreme+court")
+website <- read_html("https://time.com/6127193/supreme-court-reform-expansion/")
+
+site1 <- tibble(
+  title = website %>%
+    html_nodes(".self-baseline") %>%
+    html_text(),
+  
+  author = website %>%
+    html_nodes(".inline-block .font-bold") %>%
+    html_text(),
+
+  date = website %>%
+    html_node("time") %>%
+    html_text(),
+    
+  body = website %>%
+    html_nodes("> .tracking-0\.5px") %>%
+    html_text(),
+)
+
+
+```
