@@ -16,7 +16,7 @@ execute:
 This data set includes a random set of 500 CNN articles from 2020 and 2021 identified with the search term "black lives matter" and scraped in 2023.
 
 ```{r}
-cnn_data <- readRDS("../data/CNN_cleaning.Rds")
+cnn_data <- readRDS("data_files/CNN_cleaning.Rds")
 ```
 
 ### Cleaning the data
@@ -58,17 +58,38 @@ library(lubridate)
 #### 1. authors: Separate the authors into different columns
 
 ```{r}
+# Replace special delimitor 'with' 
+cnn_data_pre <- cnn_data %>%
+  mutate(authors = str_replace_all(authors, "\\swith\\s", ";"))
 
+# Count the number of semicolons in each authors string
+semicolon_counts <- str_count(cnn_data$authors, ";")
+
+# Find the maximum number of semicolons
+max_author <- max(semicolon_counts) + 1
+print(max_author)
+
+# Split the authors column into multiple columns
+cnn_data_separated <- cnn_data_pre %>%
+  separate(authors, into = paste0("author_", 1:max_author), sep = ";", fill = "right", extra = "merge")
 ```
 
-#### 2. timestamp: Create the following three variables, and discard the rest of the information.
+####  2. timestamp: Create the following three variables, and discard the rest of the information.
 
 a.  one that includes the information whether the article was updated or published on this date.
 b.  one that holds the weekday.
 c.  one that holds the date (in date format!).
 
 ```{r}
-
+# Timestamp:   Updated         8:32 AM EST, Mon November 2, 2020  
+cnn_data_time <- cnn_data_separated %>%
+  mutate(
+    status = ifelse(str_detect(timestamp, "Updated"), "Updated", "Published"),
+    weekday = str_extract(timestamp, "Mon|Tue|Wed|Thu|Fri|Sat|Sun"),
+    date = mdy(str_extract(timestamp, "[A-Za-z]+ \\d{1,2}, \\d{4}"))
+  ) 
+# Remove the timestamp column
+cnn_data_time <- cnn_data_time %>% select(-timestamp)
 ```
 
 #### 3. title and body:
@@ -77,6 +98,24 @@ a.  remove all capitalization
 b.  remove non-language (e.g., html-notation and excessive white spaces)
 
 ```{r}
+clean_text <- function(text) {
+  # Remove HTML tags
+  cleaned_text <- str_remove_all(text, "<.*?>")
+  # Remove excessive white spaces
+  cleaned_text <- str_squish(cleaned_text)
+  return(cleaned_text)
+}
+# a
+cnn_data_text <- cnn_data_time
+# Convert the 'title' and 'body' columns to lowercase
+
+cnn_data_text$title <- str_to_lower(cnn_data_text$title)
+cnn_data_text$body <- str_to_lower(cnn_data_text$body)
+
+# b
+# Apply the cleaning function to 'title' and 'body' columns
+cnn_data_text$title <- sapply(cnn_data_text$title, clean_text)
+cnn_data_text$body <- sapply(cnn_data_text$body, clean_text)
 
 ```
 
@@ -85,13 +124,27 @@ b.  remove non-language (e.g., html-notation and excessive white spaces)
 #### 1. Count the length of articles, calculate the mean length of articles, and count the overall number of characters in this corpus
 
 ```{r}
+cnn_data_count <- cnn_data_text
+cnn_data_count$article_length <- nchar(cnn_data_count$body)
 
+print("Mean article length")
+print(mean(cnn_data_count$article_length))
+
+print("Sum article length")
+print(sum(cnn_data_count$article_length))
 ```
 
 #### 2. Count how often "Black Lives Matter" or "BLM" are mentioned in individual articles and titles and think about the implications of the results
 
 ```{r}
+# Function to count occurrences of "Black Lives Matter" and "BLM" in each article
+count_blm <- function(text) {
+  # Count occurrences of "Black Lives Matter" and "BLM"
+  count_blm <- str_count(tolower(text), "black lives matter|blm")
+  return(count_blm)
+}
 
+cnn_data_count$blm_count <- sapply(cnn_data_count$body, count_blm)
 ```
 
 #### 3. Count the number of articles by month
