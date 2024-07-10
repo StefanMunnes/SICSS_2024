@@ -6,7 +6,7 @@ base_html = "https://time.com/search/?q=election&page="
 pages <- paste0(base_html,1:5)
 print(pages)
 
-all_article_urls <- tibble()
+all_article_urls <- c()
 
 for (page in pages) {
   url <- read_html(page)
@@ -14,10 +14,9 @@ for (page in pages) {
   article_urls <- url %>%
     html_nodes(".headline") %>%
     html_elements("a") %>%
-    html_attr("href") %>%
-    list()
+    html_attr("href")
   
-  all_article_urls <- rbind(all_article_urls,article_urls)
+  all_article_urls <- append(all_article_urls,article_urls)
   
 }
 
@@ -26,7 +25,7 @@ print(all_article_urls)
 #df.urls <- tibble(urls)
 
 get_article_info = function(html) {
-  url <- read_html("https://time.com/6995779/france-macron-disastrous-election/")
+  url <- read_html(html)
   
   title <- url %>%
     html_nodes("header") %>%
@@ -34,7 +33,7 @@ get_article_info = function(html) {
     html_text()
   
   author <- url %>%
-    html_node(".inline-block .font-bold") %>%
+    html_node("#article-body a.font-bold") %>%
     html_text()
   
   date <- url %>%
@@ -42,25 +41,23 @@ get_article_info = function(html) {
     html_attr("datetime") %>%
     str_sub(1,10)
   
-  text <- url %>%
+  texts <- url %>%
     html_nodes("p.self-baseline") %>%
-    html_text()
+    html_text() %>%
+    paste(collapse = ";")
   
-  new_article_info <- tibble(title, author, date, text)
+  article_info <- tibble(html, title, author, date, text)
+  print(article_info)
   
   Sys.sleep(2)
 }
 
-colnames(all_article_urls)[1] <- "all_article_urls"
-article_data <- tibble()
+all_article_data <- tibble()
 
-for (i in 1:45) {
-  html <- all_article_urls[i]
-  new_data <- get_article_info(html)
-  
-  df.new_data <- tibble(new_data)
-  
-  rbind(article_data,new_data)
-  
+for (all_article_url in all_article_urls) {
+  new_data <- get_article_info(all_article_url)
+  all_article_data <- rbind(all_article_data,new_data)
 }
+
+
 
