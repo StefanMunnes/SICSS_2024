@@ -79,23 +79,26 @@ css_wiki <- tibble(
 
 search_url <- "https://time.com/search/?q=travel"
 
-all_links <- 0
+all_links <- data.frame(url = character(0))
 
-current_url <- 0
-
-i <- 0
+i <- 1
 while(i < 6) {
-  current_url <- 0
-  current_url <- read_html(search_url)
+  temp_search_url <- paste(search_url,"&page=",i, sep = "")
+  print(temp_search_url)
+  current_url <- read_html(temp_search_url)
   links_page <- tibble(
     url = current_url %>%
     html_nodes(".media-heading a") %>%
     html_attr("href")
 )
 
-  paste(search_url,"&page=",i)
+  i <- i+1
   
+  all_links <- rbind(all_links, links_page)
+
 }
+
+  
 
 ```
 
@@ -105,4 +108,81 @@ We basically combine Task 2 and 3 to solve this one.
 
 ```{r}
 
+search_url <- "https://time.com/search/?q=travel"
+
+all_links <- data.frame(url = character(0))
+
+i <- 1
+while(i < 6) {
+  temp_search_url <- paste(search_url,"&page=",i, sep = "")
+  print(temp_search_url)
+  current_url <- read_html(temp_search_url)
+  links_page <- tibble(
+    url = current_url %>%
+    html_nodes(".media-heading a") %>%
+    html_attr("href")
+)
+
+  i <- i+1
+  
+  all_links <- rbind(all_links, links_page)
+  
+  Sys.sleep(0.2)
+
+}
+
+
+# Initialize an index variable
+i <- 1
+
+# Initialize an empty list to store the values
+temp_website <- 0
+
+# Initialize an empty list to store the page information
+css_wiki <- data.frame(
+  title = character(0),
+  author = character(0),
+  date = character(0),
+  text = character(0),
+  url = character(0)
+)
+
+# While loop to iterate through all URLs
+while (i <= length(all_links$url)) {
+    # Get the current URL
+    temp_url <- all_links$url[i]
+    temp_website <- read_html(temp_url)
+
+    # Increment the index
+    i <- i + 1
+    
+    temp_css_wiki <- tibble(
+      title = temp_website %>%
+        html_node("#article-header .self-baseline") %>%
+        html_text(),
+  
+      author = temp_website %>%
+        html_node("#article-body .font-bold") %>%
+        html_text(),
+  
+      date = temp_website %>%
+        html_node("time") %>%
+        html_text(),
+    
+      text = temp_website %>%
+        html_nodes("#article-body") %>%
+        html_text() %>%
+        paste(collapse = ""),
+      
+      url = temp_url
+
+      )
+    
+    css_wiki <- rbind(css_wiki, temp_css_wiki)
+    
+    Sys.sleep(0.2)
+    
+}
+
+write.csv(css_wiki, file = "css_wiki.csv")
 ```
