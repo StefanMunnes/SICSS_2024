@@ -26,59 +26,68 @@ text <- "   I hope you will have a great time during the 9 days of SICSS-Berlin.
 #### Is there a line break present? Show using a function
 
 ```{r}
-str_detect(text, "\n")
+check_break <- function(content){ 
+    str_detect(content, "\n")
+  }
+
+check_break(text)
 ```
 
 #### Remove the line break
 
 ```{r}
-text <- str_replace_all(text, "\\n", "")
-print(text)
+
+no_break <- str_replace_all(text, "\n", "")
+print(no_break)
 ```
 
 #### Remove the two "Orange"
 
 ```{r}
-text <- str_replace_all(text, "[Oo]range", "")
-print(text)
-text_old <- text
-print(text_old)
+
+no_fruit <- str_replace_all(no_break, "Orange", "")
+print(no_fruit)
+
+
 ```
 
 #### Remove the unnecessary white spaces
 
 ```{r}
-text <- str_trim(text_old)
-text <- str_replace_all(text, "\\s{3}+", "")
-print(text)
-print(text_old)
+
+no_space <- str_trim(no_fruit, side = c("both"))
+print(no_space)
+
 ```
 
 #### How long is this string? Count characters and words.
 
 ```{r}
-str_count(text)
+str_length(no_space)
+
+
 ```
 
 #### Extract the email address
 
 ```{r}
-mail <- str_extract(text, "\\w*?\\.\\w+@\\.*[a-z]+\\.[a-z]*")
-print(mail)
-print(text)
+
+email <- str_extract(no_space, "sicss.2023@wzb.eu")
+print(email)
 ```
 
 #### Change the text to all lower-case
 
 ```{r}
-str_to_lower(text)
+str_to_lower(no_space)
+
 ```
 
 #### Correct the misspelled word
 
 ```{r}
-text_corrected <- str_replace(text, "impovemend", "improvement")
-print(text_corrected)
+str_replace_all(no_space, "impovemend", "improvements")
+
 ```
 
 ### More difficult
@@ -106,22 +115,17 @@ texts <- c(
 #### Find all sentences that mention the word "apple" directly followed by"pie"
 
 ```{r}
-apple_pie_list <- str_which(texts, "apple pie")
-print(apple_pie_list)
-print(texts[apple_pie_list])
+
 ```
 
 #### Find all sentences where "pie" is not directly preceded by "apple"
 
 ```{r}
-apple_pie_not_list <- str_which(texts, "apple(?!pie)")
-print(apple_pie_not_list)
-print(texts[apple_pie_not_list])
+
 ```
 
 #### Change "pineapple" to"apple" in all strings
 
 ```{r}
-apple_list <- str_replace_all(texts, "pineapple", "apple")
-print(apple_list)
+
 ```

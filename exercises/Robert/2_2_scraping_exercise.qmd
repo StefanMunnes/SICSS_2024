@@ -1,0 +1,157 @@
+---
+title: "Web Scraping Exercise"
+date: July 9, 2024
+format: 
+  html:
+    embed-resources: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Tasks
+
+0.  Get selector gadget: <https://selectorgadget.com/>
+1.  Search for a topic you find interesting using the search function on <https://time.com/>
+2.  Select one of the articles from the search results and scrape *title, author, date, and body* of that article.
+3.  Scrape the URLs of all five pages of search results
+4.  Now scrape title, author, date, and body of all of those articles.
+
+-   *NOTE: The result should be in a data frame with five columns (title, author, date, body, url).*
+-   *NOTE: Tomorrow we will learn how to clean the text data.*
+-   *NOTE: Don't forget to include a time delay between each request to the server!*
+
+## Packages your will (probably) need:
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(stringi)
+```
+
+## Task 1
+
+I searched for "YOUR SEARCH TERM HERE" on https://time.com/.
+
+## Task 2
+
+This task is basically the testing phase for task 4. You go to the webpage, in this case one example article, and find the CSS selectors that work for what you need and note them down.
+
+-   Title:
+-   Authors:
+-   Date:
+-   Text:
+
+```{r}
+
+website <- read_html("https://www.theguardian.com/world/article/2024/jul/09/nato-biden-ukraine-air-defenses")
+
+title <- website %>%
+  html_node(".dcr-u0152o") %>%
+  html_text()
+
+date <- website %>%
+  html_node(".dcr-1ybxn6r") %>%
+  html_text()
+
+author <- website %>%
+  html_node(".dcr-1cfpnlw a") %>%
+  html_text()
+
+body <- website %>%
+  html_node(".dcr-iy9ec7") %>%
+  html_text() %>%
+  paste(collapse = "")
+
+
+```
+
+```{r}
+## Tibblized
+
+website <- read_html("https://www.theguardian.com/world/article/2024/jul/09/nato-biden-ukraine-air-defenses")
+
+guardian_data <- tibble(
+  
+  title = website %>%
+   html_node(".dcr-u0152o") %>%
+   html_text(),
+
+  date = website %>%
+    html_node(".dcr-1ybxn6r") %>%
+    html_text(),
+
+  author = website %>%
+    html_node(".dcr-1cfpnlw a") %>%
+    html_text(),
+
+  body <- website %>%
+    html_node(".dcr-iy9ec7") %>%
+    html_text() %>%
+    paste(collapse = "")
+)
+```
+
+## Task 3: Get Page URLS
+
+*Guardian 'Tags' Page URL Scraper*
+
+```{r}
+
+g_topics <- read_html("https://www.theguardian.com/technology/artificialintelligenceai")
+
+guardian_urls <- tibble(
+  title = g_topics %>%
+    html_nodes(".dcr-lv2v9o") %>%
+    html_attr("aria-label"),
+  
+  url = g_topics %>%
+    html_nodes(".dcr-lv2v9o") %>%
+    html_attr("href")
+)
+
+```
+
+## Task 4: Automate Page Navigation to get URLS from Multiple Pages: My Version
+
+```{r}
+
+page_no <- 1
+urls_total <- data.frame()
+
+while(TRUE){
+    website <- read_html(paste0("https://www.theguardian.com/technology/artificialintelligenceai?page", page_no))
+    message("Scraping urls from page", page_no) 
+    
+    url <- g_topics %>%
+    html_nodes(".dcr-lv2v9o") %>%
+    html_attr("href")
+    
+    title <- g_topics %>%
+    html_nodes(".dcr-lv2v9o") %>%
+    html_attr("aria-label")
+    
+    urls_total <- bind_rows(urls_total, as.data.frame(title, url))
+    
+    page_no <- page_no + 1
+  
+    if (page_no > 10) {
+      message("All done")
+      break
+    }
+    Sys.sleep(1)
+
+}
+
+
+```
+
+### Apply URLS to Scrape Article Content
+
+```{r}
+
+```
