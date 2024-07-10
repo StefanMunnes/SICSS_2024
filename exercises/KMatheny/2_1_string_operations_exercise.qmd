@@ -26,59 +26,53 @@ text <- "   I hope you will have a great time during the 9 days of SICSS-Berlin.
 #### Is there a line break present? Show using a function
 
 ```{r}
-str_detect(text, "\n")
+
+linebreak <- function(x) {
+  website <- read_html()
+gsub("[\r\n]", "", text)
 ```
 
 #### Remove the line break
 
 ```{r}
-text <- str_replace_all(text, "\\n", "")
-print(text)
+
+
 ```
 
 #### Remove the two "Orange"
 
 ```{r}
-text <- str_replace_all(text, "[Oo]range", "")
-print(text)
-text_old <- text
-print(text_old)
+
 ```
 
 #### Remove the unnecessary white spaces
 
 ```{r}
-text <- str_trim(text_old)
-text <- str_replace_all(text, "\\s{3}+", "")
-print(text)
-print(text_old)
+
 ```
 
 #### How long is this string? Count characters and words.
 
 ```{r}
-str_count(text)
+
 ```
 
 #### Extract the email address
 
 ```{r}
-mail <- str_extract(text, "\\w*?\\.\\w+@\\.*[a-z]+\\.[a-z]*")
-print(mail)
-print(text)
+
 ```
 
 #### Change the text to all lower-case
 
 ```{r}
-str_to_lower(text)
+
 ```
 
 #### Correct the misspelled word
 
 ```{r}
-text_corrected <- str_replace(text, "impovemend", "improvement")
-print(text_corrected)
+
 ```
 
 ### More difficult
@@ -106,22 +100,17 @@ texts <- c(
 #### Find all sentences that mention the word "apple" directly followed by"pie"
 
 ```{r}
-apple_pie_list <- str_which(texts, "apple pie")
-print(apple_pie_list)
-print(texts[apple_pie_list])
+
 ```
 
 #### Find all sentences where "pie" is not directly preceded by "apple"
 
 ```{r}
-apple_pie_not_list <- str_which(texts, "apple(?!pie)")
-print(apple_pie_not_list)
-print(texts[apple_pie_not_list])
+
 ```
 
 #### Change "pineapple" to"apple" in all strings
 
 ```{r}
-apple_list <- str_replace_all(texts, "pineapple", "apple")
-print(apple_list)
+
 ```
