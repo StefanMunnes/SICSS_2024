@@ -1,0 +1,126 @@
+---
+title: "String Operations"
+date: July 10, 2024
+format:  html
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+```{r}
+library(tidyverse) #stringr is part of the tidyverse
+```
+
+```{r}
+text <- "   I hope you will have a great time during the 9 days of SICSS-Berlin.  Orange  \nIf you have any suggestions for impovemend, feel free to tell us in person or via sicss.2023@wzb.eu.    Orange "
+```
+
+### Use `stringr` package, to solve the following tasks.
+
+**Check out the stringr_cheatsheet.pdf in the day3_data_cleanup folder!**
+
+#### Is there a line break present? Show using a function
+
+```{r}
+str_detect(text, "\n")
+```
+
+#### Remove the line break
+
+```{r}
+text <- str_replace_all(text, "\\n", "")
+print(text)
+```
+
+#### Remove the two "Orange"
+
+```{r}
+text <- str_replace_all(text, "[Oo]range", "")
+print(text)
+text_old <- text
+print(text_old)
+```
+
+#### Remove the unnecessary white spaces
+
+```{r}
+text <- str_trim(text_old)
+text <- str_replace_all(text, "\\s{3}+", "")
+print(text)
+print(text_old)
+```
+
+#### How long is this string? Count characters and words.
+
+```{r}
+str_count(text)
+```
+
+#### Extract the email address
+
+```{r}
+mail <- str_extract(text, "\\w*?\\.\\w+@\\.*[a-z]+\\.[a-z]*")
+print(mail)
+print(text)
+```
+
+#### Change the text to all lower-case
+
+```{r}
+str_to_lower(text)
+```
+
+#### Correct the misspelled word
+
+```{r}
+text_corrected <- str_replace(text, "impovemend", "improvement")
+print(text_corrected)
+```
+
+### More difficult
+
+```{r}
+texts <- c(
+  "An apple a day keeps the doctor away, but a pineapple a day might not.",
+  "She sells sea shells by the seashore, but apple pie is my favorite.",
+  "Look behind you to find a treasure map that leads to an apple orchard.",
+  "Look ahead of you, there is a pie waiting for you at the end of the road.",
+  "We will go forward with our plan, making pineapple pie for the party.",
+  "Never look back, unless you dropped your apple on the way.",
+  "The future is bright with possibilities, and a slice of pie.",
+  "The past is gone, but the recipe for pineapple pie remains.",
+  "Pineapple is a tropical fruit, often confused with an apple.",
+  "I like pineapples on my pizza, but apple pie is a classic dessert.",
+  "A good pie can brighten anyone's day, especially a pineapple one.",
+  "This apple pie recipe is handed down from generations.",
+  "Finding a perfect apple is not easy, but making pie from it is rewarding.",
+  "On a rainy day, nothing beats a warm slice of apple pie.",
+  "Pineapple pies are rare, but they are a delicious twist on a classic dessert."
+)
+```
+
+#### Find all sentences that mention the word "apple" directly followed by"pie"
+
+```{r}
+apple_pie_list <- str_which(texts, "apple pie")
+print(apple_pie_list)
+print(texts[apple_pie_list])
+```
+
+#### Find all sentences where "pie" is not directly preceded by "apple"
+
+```{r}
+apple_pie_not_list <- str_which(texts, "pie")
+print(apple_pie_not_list)
+print(texts[apple_pie_not_list])
+```
+
+#### Change "pineapple" to"apple" in all strings
+
+```{r}
+
+```
