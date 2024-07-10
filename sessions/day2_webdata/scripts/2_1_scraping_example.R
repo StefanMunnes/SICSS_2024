@@ -56,4 +56,3 @@ css_wiki <- tibble(
     html_node(".navigation-not-searchable .mw-redirect") %>%
     html_attr("href")
 )
-
