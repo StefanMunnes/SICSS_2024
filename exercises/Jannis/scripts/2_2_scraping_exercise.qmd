@@ -58,6 +58,38 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 
 # Text:
 # html_node(xpath = "//>//*[contains(concat( " ", @class, " " ), concat( " ", "tracking-0\.5px", " " ))]")
+
+
+
+website <- read_html("https://time.com/6127193/supreme-court-reform-expansion/")
+
+site1 <- tibble(
+  title = website %>%
+      html_node("#article-header .self-baseline") %>%
+    html_text(),
+  
+  author = website %>%
+  html_nodes("#article-body a.font-bold") %>%
+    html_text()%>%
+    paste(collapse = ";"),
+  
+  tags = website %>%
+    html_nodes("#article-header a") %>%
+    html_text() %>%
+    paste(collapse = ";"),
+  
+  date = website %>%
+    html_node("time") %>%
+    html_text(),
+    
+  body = website %>%
+    #html_nodes("> .tracking-0\.5p") %>%
+    html_nodes("#article-body p") %>%
+    html_text() %>%
+    paste(collapse = " ")
+)
+
+
   
 ```
 
@@ -76,6 +108,22 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 # https://time.com/6994189/supreme-court-donald-trump-presidential-immunity-decision/
 
 
+get_urls_scraped <- function(seite) {
+  website_search <- read_html(paste0("https://time.com/search/?q=supreme%20court&page=", seite))
+
+  urls_scraped <- website_search %>%
+    html_nodes(".media-heading a") %>%
+    html_attr("href")
+
+  return(urls_scraped)
+  
+  Sys.sleep(2)
+}
+
+all_urls <- lapply(2:6, get_urls_scraped) %>%
+  unlist()
+
+# df_all_urls <- bind_rows(all_urls)
 ```
 
 ## Task 4
@@ -83,26 +131,56 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 We basically combine Task 2 and 3 to solve this one.
 
 ```{r}
-search_website <- read_html("https://time.com/search/?q=supreme+court")
-website <- read_html("https://time.com/6127193/supreme-court-reform-expansion/")
 
-site1 <- tibble(
-  title = website %>%
-    html_nodes(".self-baseline") %>%
-    html_text(),
+# Write scraping function
+get_all_articles <- function(url) {
   
-  author = website %>%
-    html_nodes(".inline-block .font-bold") %>%
-    html_text(),
+  if url 
+  
+  print(paste(url, all_urls[[url]]))
+  
+  website <- read_html(all_urls[[url]])
 
-  date = website %>%
-    html_node("time") %>%
-    html_text(),
+  article <- tibble(
+    title = website %>%
+      html_node("#article-header .self-baseline, .longform-headline") %>%
+      html_text(),
+      
+    author = website %>%
+      html_nodes(".inline-block a.font-bold, #article-body .font-bold") %>%
+      html_text() %>%
+      paste(collapse = ";"),
     
-  body = website %>%
-    html_nodes("> .tracking-0\.5px") %>%
-    html_text(),
-)
+    tags = website %>%
+      html_nodes("#article-header a") %>%
+      html_text() %>%
+      paste(collapse = ";"),
+    
+    date = website %>%
+      html_node("time") %>%
+      html_text(),
+      
+    body = website %>%
+      html_nodes("#article-body p, p") %>%
+      html_text() %>%
+      paste(collapse = " "),
+    
+    url = all_urls[[url]]
+  )
+    
+  return(article)   
+
+  Sys.sleep(2)
+}
+
+# Exectute the function for all URLs previously collected
+all_articles <- lapply(seq_along(all_urls), get_all_articles) 
+
+# Transform lists to data frame
+Scotus <- bind_rows(all_articles)
+
+# Save as csv
+write_csv(Scotus, "../scotus2.csv")
 
 
 ```

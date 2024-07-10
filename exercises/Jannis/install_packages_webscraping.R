@@ -1,8 +1,8 @@
-install.packages("tidyverse")
-install.packages("wdman")
-install.packages("netstat")
-install.packages("rvest")
-install.packages("RSelenium")
+#install.packages("tidyverse")
+#install.packages("wdman")
+#install.packages("netstat")
+#install.packages("rvest")
+#install.packages("RSelenium")
 
 library(tidyverse)
 library(wdman)
@@ -21,11 +21,5 @@ remote_driver <- rsDriver(browser = "chrome",
                           verbose = FALSE,
                           port = free_port(random = TRUE))
 
-
-
-
-remote_driver <- rsDriver(browser = "chrome",
-                          chromever = "126.0.6478.127",
-                          verbose = FALSE,
-                          port = free_port(random = TRUE))
+#remote_driver <- rsDriver(browser = "chrome",chromever = "126.0.6478.127",verbose = FALSE,port = free_port(random = TRUE))
 
