@@ -46,7 +46,8 @@ get_article_info = function(html) {
     html_text() %>%
     paste(collapse = ";")
   
-  article_info <- tibble(html, title, author, date, text)
+  article_info <- tibble(html, title, author, date, texts)
+  return(article_info)
   print(article_info)
   
   Sys.sleep(2)
