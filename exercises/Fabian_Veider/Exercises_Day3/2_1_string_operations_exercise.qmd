@@ -122,6 +122,6 @@ print(texts[apple_pie_not_list])
 #### Change "pineapple" to"apple" in all strings
 
 ```{r}
-apple_pie_not_list <- str_replace_all(texts, "apple(?!pie)")
-
+apple_list <- str_replace_all(texts, "pineapple", "apple")
+print(apple_list)
 ```
