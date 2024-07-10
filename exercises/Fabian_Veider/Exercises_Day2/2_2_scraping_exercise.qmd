@@ -94,9 +94,9 @@ scrape_article <- function(url) {
     html_text(trim = TRUE)
   
   author <- article_page %>%
-    html_node(".inline-block .font-bold") %>%
+    html_node(".inline-block a.font-bold, #article-body a.font-bold, .author-byline") %>%
     html_text(trim = TRUE)
-  
+    
   date <- article_page %>%
     html_node("time") %>%
     html_attr("datetime")
@@ -110,7 +110,8 @@ scrape_article <- function(url) {
     title = title,
     author = author,
     date = date,
-    body = body
+    body = body,
+    url = url
   )
 }
 
@@ -151,10 +152,11 @@ We basically combine Task 2 and 3 to solve this one.
 ```{r}
 # List to store all articles
 all_articles <- list()
-
+# https://time.com/search/?q=polarization
+# https://time.com/search/?q=climate&page=
 # Loop through the first 5 pages of search results
 for (i in 1:5) {
-  search_url <- paste0("https://time.com/search/?q=climate&page=", i)
+  search_url <- paste0("https://time.com/search/?q=polarization&page=", i)
   print(paste("Scraping search results page:", search_url))
   
   # Get article URLs from the search results page
@@ -162,12 +164,17 @@ for (i in 1:5) {
   
   # Loop through each article URL and scrape the details
   for (url in article_urls) {
+    # Skip subscriber articles
+    if (grepl("subscriber/article", url) || grepl("swampland.time", url)) {
+      print(paste("Skipping subscriber article:", url))
+      next
+    }
     print(paste("Scraping article:", url))
     article_details <- scrape_article(url)
     all_articles <- append(all_articles, list(article_details))
-    Sys.sleep(2)
+    Sys.sleep(1)
   }
-  Sys.sleep(2)
+  Sys.sleep(1)
 }
 
 # Combine all articles into a single tibble
