@@ -41,31 +41,13 @@ I searched for "YOUR SEARCH TERM HERE" on https://time.com/.
 
 This task is basically the testing phase for task 4. You go to the webpage, in this case one example article, and find the CSS selectors that work for what you need and note them down.
 
--   Title: head \> title
--   Authors: head \> meta:nth-child(87)
--   Date: #article-body \> div.my-6.w-full.px-4.lg:pl-\[6.5rem\].lg:pr-14 \> div \> div:nth-child(2) \> time
--   Text: body
+-   Title:
+-   Authors:
+-   Date:
+-   Text:
 
 ```{r}
 
-website <- read_html("https://time.com/5783920/school-districts-inequality-education/")
-
-title <- website %>%
-  html_node("head > title") %>%
-  html_text()
-
-author <- website %>%
-  html_node("#article-body .font-bold") %>%
-  html_text()
-
-date <- website %>% 
-  html_node("time") %>% 
-  html_text()
-
-text <- website %>%
-  html_nodes("#article-body") %>%
-  html_text() %>%
-  paste(collapse = "")
 ```
 
 ## Task 3
@@ -73,26 +55,6 @@ text <- website %>%
 *Hint: Perform a manual search on the webpage, click through the pages, and observe how the URL changes.*
 
 ```{r}
-
-# Task: Scrape the URLS
-
-get_urls <- function(page) {
-  website <- read_html(paste0("https://time.com/search/?q=education%20inequality&page=", page))
-
-  urls <- website %>%
-    html_nodes(".media-heading a") %>%
-    html_attr("href")
-
-  return(urls)
-  
-  Sys.sleep(2)
-}
-
-# run the function for pages 1-5, and then unlist, which is not necessary, but I prefer to have the result as one string vector.
-all_urls <- lapply(1:5, get_urls) %>%
-  unlist()
-
-
 
 ```
 

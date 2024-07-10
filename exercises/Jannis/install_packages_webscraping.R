@@ -1,8 +1,8 @@
-install.packages("tidyverse")
-install.packages("wdman")
-install.packages("netstat")
-install.packages("rvest")
-install.packages("RSelenium")
+#install.packages("tidyverse")
+#install.packages("wdman")
+#install.packages("netstat")
+#install.packages("rvest")
+#install.packages("RSelenium")
 
 library(tidyverse)
 library(wdman)
