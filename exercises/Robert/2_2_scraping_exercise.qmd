@@ -116,30 +116,42 @@ guardian_urls <- tibble(
 
 ```
 
-## Task 4: Automate Page Navigation to get URLS from Multiple Pages
+## Task 4: Automate Page Navigation to get URLS from Multiple Pages: My Version
 
 ```{r}
 
-base_url <- "https://www.theguardian.com/technology/artificialintelligenceai?page="
+page_no <- 1
+urls_total <- data.frame()
 
-
-for (page in range(1:10)) {
-      modified_url <- paste0(base_url + [i]),
-      print("Scraping urls from page" + [i])
-}
-
-g_topics <- read_html("https://www.theguardian.com/technology/artificialintelligenceai")
-
-guardian_urls <- tibble(
-  title = g_topics %>%
-    html_nodes(".dcr-lv2v9o") %>%
-    html_attr("aria-label"),
-  
-  url = g_topics %>%
+while(TRUE){
+    website <- read_html(paste0("https://www.theguardian.com/technology/artificialintelligenceai?page", page_no))
+    message("Scraping urls from page", page_no) 
+    
+    url <- g_topics %>%
     html_nodes(".dcr-lv2v9o") %>%
     html_attr("href")
-)
+    
+    title <- g_topics %>%
+    html_nodes(".dcr-lv2v9o") %>%
+    html_attr("aria-label")
+    
+    urls_total <- bind_rows(urls_total, as.data.frame(title, url))
+    
+    page_no <- page_no + 1
+  
+    if (page_no > 10) {
+      message("All done")
+      break
+    }
+    Sys.sleep(1)
+
+}
 
 
+```
+
+### Apply URLS to Scrape Article Content
+
+```{r}
 
 ```
