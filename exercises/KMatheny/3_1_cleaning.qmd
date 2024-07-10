@@ -76,8 +76,8 @@ c.  one that holds the date (in date format!).
 ```{r}
 
 cnn_data <- cnn_data %>% 
-  mutate(Status = str_extract(timestamp, "Updated|Published"))
-Weekday = str_extract(timestamp, "Sun|Mon|Tue|Wed|Thu|Fri|Sat"))
+  mutate(Status = str_extract(timestamp, "Updated|Published")) %>% 
+  Weekday = str_extract(timestamp, "Sun|Mon|Tue|Wed|Thu|Fri|Sat")
 
 cnn_data <- cnn_data %>% 
   mutate(Date = str_extract(timestamp, "(January|February|March|April|May|June|July|August|September|October|November|December) ..?, 2..."))
