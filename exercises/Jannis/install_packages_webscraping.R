@@ -21,11 +21,5 @@ remote_driver <- rsDriver(browser = "chrome",
                           verbose = FALSE,
                           port = free_port(random = TRUE))
 
-
-
-
-remote_driver <- rsDriver(browser = "chrome",
-                          chromever = "126.0.6478.127",
-                          verbose = FALSE,
-                          port = free_port(random = TRUE))
+#remote_driver <- rsDriver(browser = "chrome",chromever = "126.0.6478.127",verbose = FALSE,port = free_port(random = TRUE))
 
