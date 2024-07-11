@@ -17,6 +17,7 @@ execute:
 # Data preparation
 
 Packages you will (probably) need:
+
 ```{r}
 library(dplyr)
 library(quanteda)
@@ -24,7 +25,8 @@ library(quanteda.textstats)
 library(quanteda.textplots)
 ```
 
-Load the data: 
+Load the data:
+
 ```{r}
 data_fox <- readRDS("data/FOX.Rds")
 data_cnn <- readRDS("data/CNN.Rds")
@@ -36,68 +38,144 @@ data_news <- bind_rows(
 ```
 
 Use a smaller sample (if needed):
+
 ```{r}
 set.seed(161)
 
-data_news <- slice_sample(data_news, n = 300)
+news_sample <- slice_sample(data_news, n = 300)
 ```
-
 
 # Inspect news data with quanteda workflow
 
 ## Create corpus, tokens and DFM objects (without pre-processing)
 
 Create corpus object and get summary:
+
 ```{r}
 
+df <- corpus(news_sample, text_field = "body")
+summary(df, n = 50)
 ```
 
 Create tokens object:
+
 ```{r}
+
+sample_dirty_tokens <- tokens(df, remove_punct = FALSE, stem = FALSE)
 
 ```
 
 Create Document-Feature-Matrix:
+
 ```{r}
+
+small_dfm <- dfm(x)
 
 ```
 
 Show most frequent words (without pre-processing)
+
 ```{r}
-
+textstat_frequency(y) 
 ```
-
 
 ## Pre-process the text for more useful insights
 
 Remove unnecessary tokens and other text features, homogenize text:
+
 ```{r}
+#inspect stopwords
+stopwords("en")
+
+# could add custom stopwords
+# mystopwords <- c("getty images")
+# or use compound words or n_grams to define it 
+
+
+big_df <- corpus(data_news, text_field = "body")
+
+# xy <- tokens(big_df, remove_punct = TRUE, stem = FALSE)
+
+tokens_news <- tokens(
+    big_df,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
 
 ```
 
+```{r}
+
+small_corpus <- corpus(news_sample, text_field = "body")
+
+tokens_sample <- sample_tokens(
+    small_corpus,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+ # tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+```
 
 Inspect pre-processed DFM:
+
 ```{r}
+
+big_dfm <- dfm(tokens_news)
+textstat_frequency(big_dfm, n = 20)
 
 ```
 
+```{r}
+tfidf <- dfm_tfidf(small_dfm)
+topfeatures(tfidf, n = 5, groups = docnames(tfidf))
+```
 
 ## Show most important compound and co-occuring words
 
-Show statistics for top 15 collocations: 
+Show statistics for top 15 collocations:
+
 ```{r}
+
+#kwic(tokens_news, "protest", window = 5)
+
+textstat_collocations(tokens_sample, size = 2) |>
+  head(15)
 
 ```
 
 **Bonus**: Create a Feature-Coocurrence-Matrix and plot connection for top 40 words:
+
 ```{r}
+fcm_pp <- fcm(tokens_sample, context = "window", count = "frequency", window = 3)
+summary(fcm_pp)
+
+
+col <- sample_dirty_tokens |> 
+    tokens_remove(stopwords("en")) |> 
+    tokens_select(pattern = "^[A-Z]", valuetype = "regex", 
+                  case_insensitive = FALSE, padding = TRUE) |>
+    textstat_collocations(min_count = 5, tolower = FALSE)
+head(col)
 
 ```
-
 
 ## **Bonus**: Visualize differences in keywords by news outlet
 
 Check if keywords differ for different news outlets:
+
 ```{r}
 
 ```
