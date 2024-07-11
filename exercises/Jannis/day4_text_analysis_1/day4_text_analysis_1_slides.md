@@ -5,13 +5,13 @@ paginate: true
 _paginate: false
 _class: invert
 title: Text analysis I
-footer: SICSS Berlin - Day 4 - 2023/07/06
+footer: SICSS Berlin - Day 4 - 2024/07/11
 math: mathjax
 headingDivider: 1
 ---
 
 # Text analysis I
-## Frequency based methods  
+## Count based methods  
 
 ---
 
@@ -95,7 +95,7 @@ What is the smallest, meaningful unit of text documents to encode?
 
 # Bag of **Pre-processing**
 
-manipulate and simplify raw text data to focus on important information:
+Manipulate and simplify raw text data to focus on important information:
 
 * remove punctuation? numbers? symbols? separators?
 * remove stopwords?
@@ -174,8 +174,8 @@ TF-IDF may not be helpful in cases where the document collection is small or lac
 * (compare) term frequencies & keyness $\rightarrow$ exploration
 * readability & lexical diversity
 * sentiment analysis (e.g. dictionary approaches)
-* document classification (e.g. naive bayes, support vector machine)
 * topic modeling (e.g. LDA, STM)
+* document classification (e.g. naive bayes, support vector machine)
 
 
 # Bag of **R packages**
@@ -198,10 +198,10 @@ show NLP R ecosystem
   - package for **qu**antitative **an**alysis of **te**xtual **da**ta
     - 2013 first published 
     - broadly used, often in social science
-  - faster then comparable R packages (tm, tidytext)
+  - faster than comparable R packages (tm, tidytext)
   - implements a lot of standard methods
-  - functional for most languages, also for non-latin characters
-  - compatible with other packauges: spacyr, readtext, stm, ...
+  - functional for most languages, also for non-Latin characters
+  - compatible with other packages: spaCyr, readtext, stm, ...
   - multiple packages: *quanteda*, *quanteda.textstats*, *quanteda.textmodels*, *quanteda....*
 
 
@@ -210,7 +210,7 @@ show NLP R ecosystem
 Three different data levels and objects:
 
 1. **Corpus**: data.frame of structured texts with document variables
-2. **Tokens**: splitted text,stay in order of original text
+2. **Tokens**: split text, stay in order of original text
 3. **Document-feature matrix**: matrix with frequencies of tokens per document
 
 ---
@@ -286,11 +286,11 @@ textstat_keyness(dfm, target = docvars(dfm, "news") == "CNN") |>
 ## Context, n-grams, and feature co-occurrence matrix
 
 ```r
-kwic(tokens_pp, "rezensent*")
+kwic(tokens_pp, "protest", window = 5)
 ```
 
 ```r
-textstat_collocations(tokens_pp, size = 10)
+textstat_collocations(tokens_pp, size = 10, )
 ```
 
 ```r
@@ -301,6 +301,10 @@ tokens_pp <- tokens_compound(tokens_pp, pattern = phrase("black live matter"))
 fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = 3)
 topfeatures(fcm_pp)
 ```
+
+
+# Exercise I
+
 
 ---
 
@@ -322,7 +326,7 @@ topfeatures(fcm_pp)
 
 # Sentiment analysis: **Quanteda**
 
-[Quanteda sentiment dictionaries](https://github.com/quanteda/quanteda.sentiment)
+[Quanteda sentiment dictionaries and how to install](https://github.com/quanteda/quanteda.sentiment)
 
 ```r
 library(quanteda.sentiment) 
@@ -429,6 +433,7 @@ F1 Score: combines precision and recall into a single value. It is the harmonic 
 2 * (Precision * Recall) / (Precision + Recall)
 -->
 
+
 # Classifier: **Naive Bayes**
 
 - counting co-occurrence of features with each class is main learning idea
@@ -440,9 +445,10 @@ F1 Score: combines precision and recall into a single value. It is the harmonic 
 
 <!--
 - classic classifier works good with small corpus (compared to deep learning)
-- classifiers often perform well and are computationally efficient, making them suitable for large-scale applications
+- classifier often perform well and are computationally efficient, making them suitable for large-scale applications
 - need less labeld data
 -->
+
 
 # Classifier: **Quanteda**
 
@@ -453,26 +459,10 @@ tmod_nb <- textmodel_nb(dfmat_train, class)
 
 summary(tmod_nb)
 
-predicted_class <- predict(tmod_nb, dfmat_test, force = TRUE)
+predicted_class <- predict(tmod_nb, dfmat_test)
 
 tab_class <- table(class, predicted_class)
 caret::confusionMatrix(tab_class, mode = "everything")
 ```
 
-
-# Exercise I
-
-1. load and inspect the whole corpus (documents, dimensions, tokens, types)
-2. use different pre-processing strategies and compare results
-3. show most important compound and co-occuring words
-4. extract important keywords
-5. Bonus: check, if keywords differ over time and between groups <br> (e.g. newspaper, authors gender, division, ...)
-
-
 # Exercise II
-
-Decide as team which task you want to start with:
-1. dictionary: sentiment over time, grouped by newspaper
-Are there differences using TF-IDF? Why? Try different Dictionaries.
-2. topic modeling: find topics and show how they appear in the corpus
-3. Bonus: try the seeded LDA or stm topic modeling approach
