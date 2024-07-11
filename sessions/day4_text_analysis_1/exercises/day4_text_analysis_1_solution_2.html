@@ -3115,20 +3115,24 @@ vertical-align: -.125em;
 <h1 data-number="2"><span class="header-section-number">2</span> Perform a sentiment analysis</h1>
 <p>Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dict_pol <span class="ot">&lt;-</span> data_dictionary_HuLiu</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dfm_lookup</span>(dfm_pp, dict_pol)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>polarity <span class="ot">&lt;-</span> <span class="fu">textstat_polarity</span>(dfm_pp, dict_pol)</span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data_dictionary_HuLiu)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data_dictionary_LSD2015)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(<span class="fu">valence</span>(data_dictionary_AFINN), head, <span class="dv">10</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(<span class="fu">valence</span>(data_dictionary_ANEW), head, <span class="dv">10</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>valence <span class="ot">&lt;-</span> <span class="fu">textstat_valence</span>(dfm_pp, data_dictionary_AFINN)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>dict_pol <span class="ot">&lt;-</span> data_dictionary_HuLiu</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">dfm_lookup</span>(dfm_pp, dict_pol)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>polarity <span class="ot">&lt;-</span> <span class="fu">textstat_polarity</span>(dfm_pp, dict_pol)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="perform-a-topic-models-analysis" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Perform a topic models analysis</h1>
 <p>Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tmod_lda <span class="ot">&lt;-</span> <span class="fu">textmodel_lda</span>(dfm_pp[<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, ], <span class="at">k =</span> <span class="dv">5</span>)</span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tmod_lda <span class="ot">&lt;-</span> <span class="fu">textmodel_lda</span>(dfm_pp[<span class="dv">1</span><span class="sc">:</span><span class="dv">700</span>, ], <span class="at">k =</span> <span class="dv">5</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">terms</span>(tmod_lda, <span class="dv">10</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -3139,14 +3143,15 @@ vertical-align: -.125em;
 <h1 data-number="4"><span class="header-section-number">4</span> <strong>Bonus</strong>: Train your own naive bayes classifier for sentiment</h1>
 <p>Get a training set from the labeled data and define classes:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dfm_pp_train <span class="ot">&lt;-</span> dfm_pp[<span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>, ]</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dfm_pp_train <span class="ot">&lt;-</span> dfm_pp[<span class="dv">1</span><span class="sc">:</span><span class="dv">700</span>, ]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>sentiment_class <span class="ot">&lt;-</span> <span class="fu">cut</span>(</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  polarity<span class="sc">$</span>sentiment,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="dv">1</span>),</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;negative&quot;</span>, <span class="st">&quot;neutral&quot;</span>, <span class="st">&quot;positive&quot;</span>))</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>sentiment_class_train <span class="ot">&lt;-</span> sentiment_class[<span class="dv">1</span><span class="sc">:</span><span class="dv">200</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">4</span>, <span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="dv">4</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;negative&quot;</span>, <span class="st">&quot;neutral&quot;</span>, <span class="st">&quot;positive&quot;</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>sentiment_class_train <span class="ot">&lt;-</span> sentiment_class[<span class="dv">1</span><span class="sc">:</span><span class="dv">700</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Train the model with the training data and classes:</p>
 <div class="cell">
@@ -3154,7 +3159,7 @@ vertical-align: -.125em;
 </div>
 <p>Get (unlabelled) test data:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dfm_pp_test <span class="ot">&lt;-</span> dfm_pp[<span class="dv">201</span><span class="sc">:</span><span class="dv">300</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dfm_pp_test <span class="ot">&lt;-</span> dfm_pp[<span class="dv">701</span><span class="sc">:</span><span class="dv">1000</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Predict class for test data with trained model:</p>
 <div class="cell">
@@ -3162,7 +3167,7 @@ vertical-align: -.125em;
 </div>
 <p>Create a simple confusion matrix to check prediction accuracy:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Predicted =</span> predictions_sent, <span class="at">Actual =</span> sentiment_class[<span class="dv">201</span><span class="sc">:</span><span class="dv">300</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Predicted =</span> predictions_sent, <span class="at">Actual =</span> sentiment_class[<span class="dv">701</span><span class="sc">:</span><span class="dv">1000</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 
