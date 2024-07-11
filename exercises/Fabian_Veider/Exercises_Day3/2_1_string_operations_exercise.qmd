@@ -114,7 +114,7 @@ print(texts[apple_pie_list])
 #### Find all sentences where "pie" is not directly preceded by "apple"
 
 ```{r}
-apple_pie_not_list <- str_which(texts, "pie")
+apple_pie_not_list <- str_which(texts, "apple(?!pie)")
 print(apple_pie_not_list)
 print(texts[apple_pie_not_list])
 ```
@@ -122,5 +122,6 @@ print(texts[apple_pie_not_list])
 #### Change "pineapple" to"apple" in all strings
 
 ```{r}
-
+apple_list <- str_replace_all(texts, "pineapple", "apple")
+print(apple_list)
 ```
