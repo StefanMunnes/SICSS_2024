@@ -1,0 +1,237 @@
+---
+title: "Cleaning- Solutions"
+date: July 10, 2024
+format:  html
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Task: Clean and check the provided CNN data according to the instructions below.
+
+This data set includes a random set of 500 CNN articles from 2020 and 2021 identified with the search term "black lives matter" and scraped in 2023.
+
+```{r}
+cnn_data <- readRDS("../data/CNN_cleaning.Rds")
+```
+
+### Cleaning the data
+
+1.  **authors**: Separate the authors into different columns
+2.  **timestamp**: Create the following three variables, and discard the rest of the information.
+    a.  one that includes the information whether the article was updated or published on this date.
+    b.  one that holds the weekday.
+    c.  one that holds the date (in date format!).
+3.  **title** and **body**:
+    a.  remove non-language (e.g., html-notation and excessive white spaces)
+    b.  remove all capitalization
+
+**Bonus cleaning task** (difficult!): Change author names to be surname first, i.e., Lisa Smith becomes Smith, Lisa.
+
+### Checking the data
+
+Performing simple counting tasks, such as determining article length, word frequency, and the number of articles over time, helps identify errors in data collection or cleaning. For instance, a misspelled search term might result in fewer articles found, or unusually short articles could indicate data issues.
+
+1.  Count the length of articles, calculate the mean length of articles, and count the overall number of characters in this corpus
+2.  Count how often "Black Lives Matter" or "BLM" are mentioned in individual articles and titles and think about the implications of the results
+3.  Count the number of articles by month
+
+Bonus task: Count how many articles that include "Black Lives Matter" or "BLM" also include the words related to riots
+
+### Packages you will probably need
+
+```{r}
+library(tidyverse) # stringr is part of the tidyverse
+library(lubridate)
+```
+
+## Complete the tasks below here
+
+(you can add additional code chunks with ctrl+alt+i / or ⌥⌃i)
+
+### Cleaning the data
+
+#### 1. authors
+
+Using `stringr`
+
+```{r}
+cnn_clean <- cnn_data %>%
+  mutate(authors = str_replace_all(authors, " with ", ";")) %>%
+  mutate(author = str_split(authors, ";", simplify = TRUE))
+
+
+%>%
+  unnest_wider(author, names_sep = "")
+```
+
+Using `tidyr`
+
+```{r}
+cnn_clean <- cnn_data %>%
+  mutate(authors = str_replace_all(authors, " with ", ";")) %>%
+  separate_wider_delim(authors, 
+                       delim = ";", 
+                       names_sep = "", 
+                       too_few = "align_start",
+                       cols_remove = TRUE) %>%
+  rename_with(~sub("authors", "author", .), starts_with("authors"))
+```
+
+#### 2. timestamp
+
+Regular expression identifying each relevant part in groups
+
+```{r}
+regex <- "\\n.*(Updated|Published)\\n.*,\\s([A-Z][a-z][a-z])\\s(.*)\\n\\s+"
+```
+
+Separating updated status, weekday and date into separate columns using `stringr`
+
+```{r}
+cnn_clean <- cnn_clean %>%
+  mutate(updated = str_extract(
+           timestamp,
+           regex,
+           group = 1),
+         weekday =  str_extract(
+           timestamp,
+           regex,
+           group = 2),
+         date = str_extract(
+           timestamp,
+           regex,
+           group = 3))
+```
+
+Separating updated status, weekday and date into separate columns using `tidyr`
+
+```{r}
+cnn_clean <- cnn_clean %>%
+  tidyr::extract(col = timestamp, 
+                 into = c("updated", "weekday", "date"), 
+                 regex = regex,
+                 remove = TRUE)
+```
+
+Date into date format using `readr`
+
+```{r}
+cnn_clean <- cnn_clean %>%
+  mutate(date = parse_date(date, "%B %d, %Y",
+                           locale = locale("en")))
+```
+
+Date into date format using `lubridate`
+
+```{r}
+cnn_clean <- cnn_clean %>%
+  mutate(date = mdy(date))
+```
+
+#### 3. title and body
+
+```{r}
+cnn_clean <- cnn_clean %>%
+  mutate(body = str_to_lower(str_squish(body)),
+         title = str_to_lower(str_squish(title))) # yep, that's it
+```
+
+#### BONUS CLEANING TASK
+
+Testing
+
+```{r}
+name <- c("First Last", "First F. Last", "First Letzte Last", "First de Last", "First Last-Letzte", "F. First Last")
+str_replace(name, 
+            "^(([:alpha:]\\.)?\\s*[:alpha:]+(\\s[:alpha:]\\.)?(?!,))\\s(.+(-.+)?)$", 
+            "\\4, \\1")
+```
+
+Implementation
+
+```{r}
+regex <- "^(([:alpha:]\\.)?\\s*[:alpha:]+(\\s[:alpha:]\\.)?(?!,))\\s(.+(-.+)?)$"
+cnn_clean <- cnn_clean %>%
+  mutate_at(vars(starts_with("author")), ~ str_replace(.,  regex , "\\4, \\1"))
+
+```
+
+**What does this regular expression say in normal language?**
+
+The \^ says that we are starting at the beginning of the string.
+
+First name:
+
+(\[:alpha:\]\\\\.)? \<\-- Optional one letter followed by a dot, to account for people that use their second first name, like this guy: W. Kamau Bell
+
+\[:alpha:\]+ \<\-- Either following the abbreviated first name or as the first thing in the string, any multiple letters ...
+
+(\\\\s\[:alpha:\]\\\\.)? \<\-- ... which might be followed by a space followed by one letter and a dot. This is to captured these people: Zachary B. Wolf
+
+If neither of the two optional things is present, we just have a basic first name: Veronica Stracqualursi.
+
+(?!,) \<\-- This says that there should be no comma in this position. This is to ensure that the name isn't already flipped (otherwise it would flip it again and "Last, First" becomes "First, Last")
+
+\\\\s \<\-- mandatory whitespace
+
+Surname:
+
+(.+(-.+)?) \<\-- One or more characters, which MAY be followed by a hyphen and more characters, this identifies the surnames (*This only works because the previous groups did not capture a second name, otherwise double surnames that are not connected by a hyphen, which is common in the US, would break this, e.g., Peter Smith Meyer.)*
+
+\$ \<\-- end of string.
+
+*Note that this solution only works, because CNN seems to always abbreviate middle names, therefore we can be sure that if there is a full "word" in the middle, it is part of the surname (since Americans do not necessarily use a hyphen in between two last names). If this was not the case this task would be even more complicated.*
+
+All of this captures four different groups, of which we extract group 1 and 4 in reverse order and place a comma+whitespace in between.
+
+### Checking the data
+
+#### 1. Count the length of articles, calculate the mean length of articles, and count the overall number of characters in this corpus
+
+```{r}
+cnn_clean <- cnn_clean %>%
+  mutate(length_chr = format(sum(str_length(body)), big.mark = ","),
+         word_count = str_count(body, "\\w+"),
+         word_mean = mean(word_count))
+```
+
+#### 2. Count how often "Black Lives Matter" or "BLM" are mentioned in individual articles and titles and think about the implications of the results
+
+```{r}
+cnn_clean %>% 
+  filter(str_detect(title, "\\b(black lives matter|blm)\\b")) %>%
+  nrow() 
+
+cnn_clean %>% 
+  filter(str_detect(body, "\\b(black lives matter|blm)\\b")) %>%
+  nrow()
+```
+
+So how many of these articles are actually about BLM, and not just mentioning it..
+
+#### 3. Count the number of articles by month
+
+```{r}
+cnn_by_month <- cnn_clean %>%
+  mutate(month = month(date),
+         year = year(date)) %>%
+  group_by(month, year) %>%
+  summarize(count_articles = n()) %>%
+  arrange(year, month)
+```
+
+#### Bonus count how many articles that include "Black Lives Matter" or "BLM" also include the words related to riots
+
+```{r}
+cnn_clean %>%
+  filter(
+    str_detect(body, "\\b(black lives matter|BLM)\\b") &
+    str_detect(body, "\\briot|unrest|violence|mob\\b")
+  ) %>%
+  nrow()
+```

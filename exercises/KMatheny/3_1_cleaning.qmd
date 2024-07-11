@@ -1,0 +1,121 @@
+---
+title: "Cleaning"
+date: July 10, 2024
+format:  html
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Task: Clean and check the provided CNN data according to the instructions below.
+
+This data set includes a random set of 500 CNN articles from 2020 and 2021 identified with the search term "black lives matter" and scraped in 2023.
+
+```{r}
+cnn_data <- readRDS("C:/Users/kayle/Dropbox/Resources/SICSS_2024/sessions/day3_data_cleanup/data/CNN_cleaning.Rds")
+```
+
+### Cleaning the data
+
+1.  **authors**: Separate the authors into different columns
+2.  **timestamp**: Create the following three variables, and discard the rest of the information.
+    a.  one that includes the information whether the article was updated or published on this date.
+    b.  one that holds the weekday.
+    c.  one that holds the date (in date format!).
+3.  **title** and **body**:
+    a.  remove non-language (e.g., html-notation and excessive white spaces)
+    b.  remove all capitalization
+
+**Bonus cleaning task** (difficult!): Change author names to be surname first, i.e., Lisa Smith becomes Smith, Lisa.
+
+### Checking the data
+
+Performing simple counting tasks, such as determining article length, word frequency, and the number of articles over time, helps identify errors in data collection or cleaning. For instance, a misspelled search term might result in fewer articles found, or unusually short articles could indicate data issues.
+
+1.  Count the length of articles, calculate the mean length of articles, and count the overall number of characters in this corpus
+2.  Count how often "Black Lives Matter" or "BLM" are mentioned in individual articles and titles and think about the implications of the results
+3.  Count the number of articles by month
+
+Bonus task: Count how many articles that include "Black Lives Matter" or "BLM" also include the words related to riots
+
+### Packages you will probably need
+
+```{r}
+library(tidyverse) # stringr is part of the tidyverse
+library(lubridate)
+```
+
+## Complete the tasks below here
+
+(you can add additional code chunks with ctrl+alt+i / or ⌥⌃i)
+
+### Cleaning the data
+
+#### 1. authors: Separate the authors into different columns
+
+cnn_data\[c('Author_1', 'Author_2', 'Author_3', 'Author_4', 'Author_5')\] \<- str_split_fixed(cnn_data\$authors, ";", 5)
+
+```{r}
+
+cnn_data$authors <- str_replace_all(cnn_data$authors, 'with', ';')
+
+cnn_data[c('Author_1', 'Author_2', 'Author_3', 'Author_4', 'Author_5')] <- str_split_fixed(cnn_data$authors, ";", 5)
+
+```
+
+#### 2. timestamp: Create the following three variables, and discard the rest of the information.
+
+a.  one that includes the information whether the article was updated or published on this date.
+b.  one that holds the weekday.
+c.  one that holds the date (in date format!).
+
+```{r}
+
+cnn_data <- cnn_data %>% 
+  mutate(Status = str_extract(timestamp, "Updated|Published")) %>% 
+  Weekday = str_extract(timestamp, "Sun|Mon|Tue|Wed|Thu|Fri|Sat")
+
+cnn_data <- cnn_data %>% 
+  mutate(Date = str_extract(timestamp, "(January|February|March|April|May|June|July|August|September|October|November|December) ..?, 2..."))
+
+cnn_data <- cnn_data %>% 
+  mutate(Date_Fmt <- mdy(Date))
+
+```
+
+#### 3. title and body:
+
+a.  remove all capitalization
+b.  remove non-language (e.g., html-notation and excessive white spaces)
+
+```{r}
+
+cnn_data <- cnn_data %>% 
+  mutate(title = str_to_lower(title, locale = "en")), 
+  title = str_remove_all(title, "[:punct:]"))
+
+```
+
+### Checking the data
+
+#### 1. Count the length of articles, calculate the mean length of articles, and count the overall number of characters in this corpus
+
+```{r}
+
+```
+
+#### 2. Count how often "Black Lives Matter" or "BLM" are mentioned in individual articles and titles and think about the implications of the results
+
+```{r}
+
+```
+
+#### 3. Count the number of articles by month
+
+```{r}
+
+```
