@@ -59,6 +59,13 @@ library(lubridate)
 
 ```{r}
 
+
+
+#  str_split(da, ";", n = 4)
+
+
+
+
 ```
 
 #### 2. timestamp: Create the following three variables, and discard the rest of the information.
@@ -69,6 +76,21 @@ c.  one that holds the date (in date format!).
 
 ```{r}
 
+cnn_data <- cnn_data %>%
+  mutate(Updated_Published = str_extract(timestamp, "^\\s+Updated"))
+#  mutate(Updated_Published = str_extract(timestamp, "^\\s+Published"))
+
+cnn_data <- cnn_data %>%
+  mutate(weekday = str_extract(timestamp, "(?<=, ).{3}"))
+
+cnn_data <- cnn_data %>%
+  mutate(date = str_extract(timestamp, "(?<=, \\w{3} ).*"))
+
+cnn_data <- cnn_data %>%
+  mutate(date2)
+
+
+"\\w+,:space:[...]"
 ```
 
 #### 3. title and body:
@@ -77,6 +99,8 @@ a.  remove all capitalization
 b.  remove non-language (e.g., html-notation and excessive white spaces)
 
 ```{r}
+
+#str_to_lower(cnn_data)
 
 ```
 

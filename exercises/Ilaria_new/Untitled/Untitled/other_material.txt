@@ -1,5 +1,0 @@
-Web Scraping links:
-
-Guide to `rvest` including all the ways you can use to target HTML elements (incl. XPATHS)
-https://jtr13.github.io/cc19/web-scraping-using-rvest.html 
-
