@@ -14,10 +14,10 @@ execute:
   error: false
 ---
 
+
 # Preparation
 
 Packages you will (probably) need:
-
 ```{r}
 library(dplyr)
 library(quanteda)
@@ -28,10 +28,10 @@ library(quanteda.textmodels)
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
 
+
 # Perform a sentiment analysis
 
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
-
 ```{r}
 
 head(data_dictionary_HuLiu)
@@ -47,10 +47,10 @@ dfm_lookup(dfm_pp, dict_pol)
 polarity <- textstat_polarity(dfm_pp, dict_pol)
 ```
 
+
 # Perform a topic models analysis
 
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
-
 ```{r}
 tmod_lda <- textmodel_lda(dfm_pp[1:700, ], k = 5)
 
@@ -59,10 +59,10 @@ terms(tmod_lda, 10)
 topics(tmod_lda)
 ```
 
-# **Bonus**: Train your own naive bayes classifier for sentiment
+
+# **Bonus**: Train your own naive bayes classifier for sentiment 
 
 Get a training set from the labeled data and define classes:
-
 ```{r}
 dfm_pp_train <- dfm_pp[1:700, ]
 
@@ -76,25 +76,21 @@ sentiment_class_train <- sentiment_class[1:700]
 ```
 
 Train the model with the training data and classes:
-
 ```{r}
 model_nb <- textmodel_nb(dfm_pp_train, sentiment_class)
 ```
 
 Get (unlabelled) test data:
-
 ```{r}
 dfm_pp_test <- dfm_pp[701:1000, ]
 ```
 
 Predict class for test data with trained model:
-
 ```{r}
 predictions_sent <- predict(model_nb, dfm_pp_test)
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
-
 ```{r}
 table(Predicted = predictions_sent, Actual = sentiment_class[701:1000])
 ```
