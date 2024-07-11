@@ -43,6 +43,8 @@ Use a smaller sample (if needed):
 set.seed(161)
 
 news_sample <- slice_sample(data_news, n = 300)
+
+corpus_sample(x, size = 10, replace = FALSE)
 ```
 
 # Inspect news data with quanteda workflow
