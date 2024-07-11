@@ -1,0 +1,118 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.sentiment)
+library(seededlda)
+library(quanteda.textmodels)
+```
+
+Use the script from exercise 1 to get all the necessary objects for the analysis
+
+# Perform a sentiment analysis
+
+Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
+
+```{r}
+
+```
+
+# Perform a topic models analysis
+
+Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
+
+```{r}
+tmod_lda <- textmodel_lda(dfm_pp, k = 5)
+
+terms(tmod_lda)
+
+topics(tmod_lda)
+```
+
+# **Bonus**: Train your own naive bayes classifier for sentiment
+
+Get a training set from the labeled data and define classes:
+
+```{r}
+
+new_list <- c(stopwords("en"), "fox", "news", "getty", "images", "cnn", "digital", "photo", "click", "via")
+
+corpus <- corpus(data_news, text_field = "body")
+  
+tok_pp <- tokens(
+  corpus,
+  what = "word",
+  remove_punct = TRUE,
+  remove_symbols = TRUE,
+  remove_numbers = TRUE,
+  remove_separators = TRUE
+) |>
+tokens_tolower() |>
+tokens_remove(new_list, padding = FALSE) |>
+  tokens_wordstem(language = "en") 
+
+dfm_pp <- dfm(tok_pp)
+
+train_dfm <- dfm_sample(dfm_pp, size = 250, by = dfm_pp@docvars$source)
+
+test_dfm <- dfm_subset(dfm_pp, !docnames(dfm_pp) %in% docnames(train_dfm))
+
+tmod_nb <- textmodel_nb(train_dfm, train_dfm@docvars$source)
+
+predicted_class <- predict(tmod_nb, test_dfm)
+
+tab_class <- table(test_dfm@docvars$source, predicted_class)
+matr_stem <- caret::confusionMatrix(tab_class, mode = "everything")
+```
+
+Train the model with the training data and classes:
+
+```{r}
+library(quanteda.textmodels)
+
+tmod_nb <- textmodel_nb(dfmat_train, class)
+
+summary(tmod_nb)
+
+predicted_class <- predict(tmod_nb, dfmat_test)
+
+tab_class <- table(class, predicted_class)
+caret::confusionMatrix(tab_class, mode = "everything")
+```
+
+Get (unlabelled) test data:
+
+```{r}
+
+```
+
+Predict class for test data with trained model:
+
+```{r}
+
+```
+
+Create a simple confusion matrix to check prediction accuracy:
+
+```{r}
+
+```
