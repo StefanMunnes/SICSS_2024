@@ -1,0 +1,107 @@
+---
+title: "Web Scraping Exercise"
+date: July 9, 2024
+format: 
+  html:
+    embed-resources: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Tasks
+
+0.  Get selector gadget: <https://selectorgadget.com/>
+1.  Search for a topic you find interesting using the search function on <https://time.com/>
+2.  Select one of the articles from the search results and scrape *title, author, date, and body* of that article.
+3.  Scrape the URLs of all five pages of search results
+4.  Now scrape title, author, date, and body of all of those articles.
+
+-   *NOTE: The result should be in a data frame with five columns (title, author, date, body, url).*
+-   *NOTE: Tomorrow we will learn how to clean the text data.*
+-   *NOTE: Don't forget to include a time delay between each request to the server!*
+
+## Packages your will (probably) need:
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(stringi)
+```
+
+## Task 1
+
+I searched for "Immigration" on https://time.com/.
+
+## Task 2
+
+This task is basically the testing phase for task 4. You go to the webpage, in this case one example article, and find the CSS selectors that work for what you need and note them down.
+
+-   Title:
+-   Authors:
+-   Date:
+-   Text:
+
+```{r}
+
+#url for article
+website <- read_html("https://time.com/collection/time100-voices/6958871/julio-torres-problemista-immigration-essay/")
+
+# title 
+title <- website %>%
+  html_node(".heading-content") %>%
+  html_text()
+
+# author 
+author <- website %>%
+  html_node(".author-byline") %>%
+  html_text()
+
+# date
+date <- website %>%
+  html_node("time") %>%
+  html_text()
+
+```
+
+## Task 3
+
+1.  Scrape the URLs of all articles on the first five pages of search results
+
+*Hint: Perform a manual search on the webpage, click through the pages, and observe how the URL changes.*
+
+```{r}
+
+# Write scraping function that iterates through page numbers by inserting them into the URL
+get_urls <- function(page) {
+  website <- read_html(paste0("https://time.com/search/?q=climate%20change&page=", page))
+
+  urls <- website %>%
+    html_nodes(".media-heading a") %>%
+    html_attr("href")
+
+  return(urls)
+  
+  Sys.sleep(2)
+}
+
+# run the function for pages 1-5, and then unlist, which is not necessary, but I prefer to have the result as one string vector.
+all_urls <- lapply(1:5, get_urls) %>%
+  unlist()
+```
+
+## Task 4
+
+1.  Now scrape title, author, date, and body of all of those articles.
+
+We basically combine Task 2 and 3 to solve this one.
+
+```{r}
+
+
+
+```

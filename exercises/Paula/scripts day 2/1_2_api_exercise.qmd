@@ -1,0 +1,170 @@
+---
+title: "API Exercise"
+date: July 9, 2024
+format: 
+  html:
+    embed-resources: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+### Task
+
+Use the API provided by <https://api.congress.gov/> to get Names and other information on members of congress. Save the resulting data on your hard drive.
+
+-   *NOTE: Don't forget to include a time delay between API requests!*
+-   *NOTE: Congress has had \~2,500 members not 250.*
+-   *NOTE: Functions like `jsonlite` convert JSON data into nested lists in R. You may retain the nested list format or convert it to a data frame, which is the format we will be using throughout this SICSS.*
+
+### Bonus Task
+
+Get the congressional records from 2020 to 2024. Save the resulting data on your hard drive.
+
+-   *NOTE: The API will return URLs to PDFs or images of the congressional records. These are enough, you do not have to attempt to actually get the files!*
+
+### API-key setup
+
+Get your API-key <https://api.congress.gov/sign-up/>
+
+When you run `file.edit("~/.Renviron)`, a (probably empty) window will open.
+
+Add `congress_key = [your key]` and save (CTRL+S/CMD+S).
+
+```{r}
+file.edit("~/.Renviron")
+```
+
+Restart R, then you can access the key via `Sys.getenv("congress_key")`. Try it:
+
+```{r}
+Sys.getenv("congress_key")
+```
+
+### Packages your will (probably) need:
+
+```{r}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+```
+
+## Work on the tasks below or in your own R script:
+
+Test a single API call, before you use it an a loop/apply function!
+
+Test / Example URL from the Congress website (with my key): [https://api.congress.gov/v3/member/L000174?api_key=](https://api.congress.gov/v3/member/L000174?api_key=55YbhLzlvj6XiP7V8X98cDTUF3PkuqjPAfKCKyYo)\[mykey\]
+
+**Testing:**
+
+```{r}
+test_info <- GET(url = "https://api.congress.gov/v3/member",
+                  query = list(format = "json",
+                               limit = 250,
+                                offset = 0,
+                           api_key = Sys.getenv("congress_key")))
+
+# Extract the contents as JSON format/lists
+members <- content(test_info, type='application/json') 
+
+# We extracted three elements, but we only need the members list
+members_list <- content(test_info, type='application/json')$members
+
+# Since we mostly work with data frames, we turn this into one
+# Problem: there is a list within our lists (latestAction), which would result
+# in two rows for each bill in our data frame. So we want to flatten the lists first
+
+# With purr package - careful to insert purrr:: as otherwise the function is masked by the jsonlite package!
+
+
+
+# with fromJSON - comamnd to convert json file sinto r readbale formats
+
+member <- fromJSON(content(test_info, 
+                             as = "text", 
+                             encoding = "UTF-8"), 
+                     flatten = TRUE)$members
+
+# do with purrr (specify as otherwise flattne funciton mgiht be overwritten by jsonlite)
+library(purrr)
+members <- map(members_list, purrr::flatten)
+
+
+
+
+# With base R
+flatten_list <- function(x) {
+  do.call(c, x) # the c stands for combine and is a base R function, see ?c
+}
+members <- lapply(members_list, flatten_list)
+
+
+
+# Now we can easily turn the list of lists into a DF, with the dplyr function
+# bind_rows
+df_members <- bind_rows(members)
+df_members_unique <- df_members |> 
+                      distinct(name, .keep_all = TRUE)
+```
+
+**Implementation as a loop or function:**
+
+```{r}
+# as a loop:
+
+offset <- 0
+results <- as.data.frame(NULL)
+
+# try to get the dtaa, put it in a dataframe, bind the next one together, stop when they are the same length
+
+# while(TRUE): insetad for (i in 1:x), runs forever until the break condition applies
+
+while(TRUE) {
+  
+  member <- GET(url = "https://api.congress.gov/v3/member",
+                  query = list(format = "json",
+                               limit = 250,
+                                offset = offset,
+                           api_key = Sys.getenv("congress_key")))
+ 
+ # extract, convert and flatten
+  members <- fromJSON(content(member, 
+                             as = "text", 
+                             encoding = "UTF-8"), 
+                     flatten = TRUE)$member
+  
+    # stop if no longer gets new data
+   if (length(member) == 0) {
+    message("No more members")
+    break
+  }
+     
+    # turn into dataframe
+    # bind_rows
+        df_members <- bind_rows(members)
+      # unique base don name - not needed anymore with the fromjson command above
+          # df_members_unique <- df_members |> 
+          #             distinct(name, .keep_all = TRUE)
+          # 
+      # add onto results dataframe
+    results <- rbind(results, df_members)
+  
+  offset <- offset + 250
+  
+  if (offset == 9000) break # safety feature so that the code does not run forever if somethign is wrong in the code
+}
+
+getwd() # scripts day 2 folder
+saveRDS(results, file = "congress_members_paula.Rds")
+
+```
+
+## Bonus Task
+
+```{r}
+
+```
