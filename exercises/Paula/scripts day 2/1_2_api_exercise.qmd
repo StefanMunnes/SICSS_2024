@@ -80,7 +80,16 @@ members_list <- content(test_info, type='application/json')$members
 
 # With purr package - careful to insert purrr:: as otherwise the function is masked by the jsonlite package!
 
-# do with base r, otherwise 
+
+
+# with fromJSON - comamnd to convert json file sinto r readbale formats
+
+member <- fromJSON(content(test_info, 
+                             as = "text", 
+                             encoding = "UTF-8"), 
+                     flatten = TRUE)$members
+
+# do with purrr (specify as otherwise flattne funciton mgiht be overwritten by jsonlite)
 library(purrr)
 members <- map(members_list, purrr::flatten)
 
@@ -122,30 +131,36 @@ while(TRUE) {
                                 offset = offset,
                            api_key = Sys.getenv("congress_key")))
  
-  # Extract the contents as JSON format/lists
-        members_list <- content(test_info, type='application/json')$members
-
-  # flatten  with purr package - careful to insert purrr:: as otherwise the function     is masked by the jsonlite package!
-        
-    members <- map(members_list, purrr::flatten)
-    
+ # extract, convert and flatten
+  members <- fromJSON(content(member, 
+                             as = "text", 
+                             encoding = "UTF-8"), 
+                     flatten = TRUE)$member
+  
+    # stop if no longer gets new data
+   if (length(member) == 0) {
+    message("No more members")
+    break
+  }
+     
     # turn into dataframe
     # bind_rows
         df_members <- bind_rows(members)
-          df_members_unique <- df_members |> 
-                      distinct(name, .keep_all = TRUE)
-          
+      # unique base don name - not needed anymore with the fromjson command above
+          # df_members_unique <- df_members |> 
+          #             distinct(name, .keep_all = TRUE)
+          # 
       # add onto results dataframe
-    results <- rbind(results, df_members_unique)
-        
-  # if (condition) { #content = zero?
-  #   break
-  # }
+    results <- rbind(results, df_members)
   
   offset <- offset + 250
   
   if (offset == 9000) break # safety feature so that the code does not run forever if somethign is wrong in the code
-  }
+}
+
+getwd() # scripts day 2 folder
+saveRDS(results, file = "congress_members_paula.Rds")
+
 ```
 
 ## Bonus Task
