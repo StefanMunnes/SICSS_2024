@@ -1,0 +1,77 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.sentiment)
+library(seededlda)
+library(quanteda.textmodels)
+```
+
+Use the script from exercise 1 to get all the necessary objects for the analysis
+
+# Perform a sentiment analysis
+
+Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
+
+```{r}
+
+```
+
+# Perform a topic models analysis
+
+Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
+
+```{r}
+
+```
+
+# **Bonus**: Train your own naive bayes classifier for sentiment
+
+Get a training set from the labeled data and define classes:
+
+```{r}
+
+```
+
+Train the model with the training data and classes:
+
+```{r}
+
+```
+
+Get (unlabelled) test data:
+
+```{r}
+
+```
+
+Predict class for test data with trained model:
+
+```{r}
+
+```
+
+Create a simple confusion matrix to check prediction accuracy:
+
+```{r}
+
+```

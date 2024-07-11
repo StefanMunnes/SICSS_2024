@@ -136,6 +136,6 @@ textplot_network(fcm_pp_subset)
 Check if keywords differ for different news outlets:
 
 ```{r}
-textstat_keyness(dfm_pp, target = docvars(corpus, "source") == "cnn") |>
+textstat_keyness(dfm_pp, target = docvars(corpus, "source") == "fox") |>
   textplot_keyness()
 ```
