@@ -93,7 +93,7 @@ tokens_pp <- tokens(
     remove_separators = TRUE
   ) |>
   tokens_tolower() |>
-  #tokens_wordstem(language = "en") |>
+  tokens_wordstem(language = "en") |>
   tokens_remove(stopwords("en"), padding = FALSE)
 
 ```
@@ -133,5 +133,8 @@ textplot_network(fcm_trimmed, min_freq = 0.1)  # Adjust min_freq as needed
 Check if keywords differ for different news outlets:
 
 ```{r}
-
+textstat_keyness(dfm_pp, target = docvars(corpus, "source") == "cnn") |>
+  textplot_keyness()
+textstat_keyness(dfm_pp, target = docvars(corpus, "source") == "fox") |>
+  textplot_keyness()
 ```
