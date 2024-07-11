@@ -21,7 +21,6 @@ Packages you will (probably) need:
 ```{r}
 library(dplyr)
 library(quanteda)
-#remotes::install_github("https://github.com/quanteda/quanteda.sentiment")
 library(quanteda.sentiment)
 library(seededlda)
 library(quanteda.textmodels)
@@ -35,14 +34,6 @@ Get a dictionary from the quanteda.sentiment package and calculate the polarity 
 
 ```{r}
 
-library(quanteda.textstats)
-
-dict_pol <- data_dictionary_HuLiu
-dfm_lookup(dfm, dict_pol)
-
-textstat_polarity(dfm, dict_pol)
-
-textstat_valence(dfm, data_dictionary_AFINN)
 ```
 
 # Perform a topic models analysis
@@ -50,10 +41,9 @@ textstat_valence(dfm, data_dictionary_AFINN)
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
 
 ```{r}
+tmod_lda <- textmodel_lda(dfm_pp, k = 5)
 
-tmod_lda <- textmodel_lda(dfm, k = 5)
-
-terms(tmod_lda, 10)
+terms(tmod_lda)
 
 topics(tmod_lda)
 ```
@@ -64,24 +54,40 @@ Get a training set from the labeled data and define classes:
 
 ```{r}
 
-set.seed(1)  
+new_list <- c(stopwords("en"), "fox", "news", "getty", "images", "cnn", "digital", "photo", "click", "via")
 
-articles_select <- sample(1:58, size = 35, replace = FALSE)
+corpus <- corpus(data_news, text_field = "body")
+  
+tok_pp <- tokens(
+  corpus,
+  what = "word",
+  remove_punct = TRUE,
+  remove_symbols = TRUE,
+  remove_numbers = TRUE,
+  remove_separators = TRUE
+) |>
+tokens_tolower() |>
+tokens_remove(new_list, padding = FALSE) |>
+  tokens_wordstem(language = "en") 
 
-dfmat_train <- corpus %>%
-corpus_subset(id %in% article_select) %>%
+dfm_pp <- dfm(tok_pp)
 
-dfm()
-dfmat_test <- corpus %>%
-corpus_subset(!id %in% articles_select) %>%
-# speech not in id
-dfm()
+train_dfm <- dfm_sample(dfm_pp, size = 250, by = dfm_pp@docvars$source)
 
+test_dfm <- dfm_subset(dfm_pp, !docnames(dfm_pp) %in% docnames(train_dfm))
+
+tmod_nb <- textmodel_nb(train_dfm, train_dfm@docvars$source)
+
+predicted_class <- predict(tmod_nb, test_dfm)
+
+tab_class <- table(test_dfm@docvars$source, predicted_class)
+matr_stem <- caret::confusionMatrix(tab_class, mode = "everything")
 ```
 
 Train the model with the training data and classes:
 
 ```{r}
+library(quanteda.textmodels)
 
 tmod_nb <- textmodel_nb(dfmat_train, class)
 
