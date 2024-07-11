@@ -46,11 +46,16 @@ tokens_pp <- tokens(
 #inspect pre-processed DFM
 dfm_pre_processed <- dfm(tokens_pp)
 
-#object for all collocations
-all_collocations <- textstat_collocations(tokens_pp, size = 2)
+#object for top 15 collocations
+top_collocations <- textstat_collocations(tokens_pp, size = 2)|>
+  head(15)
 
-#object for only top 15 most frequent collocations
+#object for top 15 most in descending order
 top_collocations <- head(all_collocations[order(-all_collocations$count), ], 15)
 
 #create FCM
-fcm_pp <- fcm(tokens_pp)
+fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = )
+
+fcm_pp_top <- fcm_select(fcm_pp, names(topfeatures(dfm_pre_processed, 40)))
+
+textplot_network(fcm_pp_top)
