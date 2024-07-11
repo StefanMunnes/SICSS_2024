@@ -14,11 +14,13 @@ execute:
   error: false
 ---
 
-
 # Preparation
 
 Packages you will (probably) need:
+
 ```{r}
+install.packages("remotes")
+remotes::install_github("quanteda/quanteda.sentiment")
 library(dplyr)
 library(quanteda)
 library(quanteda.sentiment)
@@ -28,46 +30,91 @@ library(quanteda.textmodels)
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
 
-
 # Perform a sentiment analysis
 
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
+
 ```{r}
 
-```
+head(data_dictionary_HuLiu)
+head(data_dictionary_LSD2015)
 
+dict_pol <- data_dictionary_HuLiu
+
+dfm_lookup(dfm_pp, dict_pol)
+
+textstat_polarity(dfm_pp, dict_pol)
+
+textstat_valence(dfm_pp, data_dictionary_AFINN)
+```
 
 # Perform a topic models analysis
 
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
-```{r}
 
+```{r}
+library(quanteda.textmodels)
+library(seededlda)
+
+tmod_lda <- textmodel_lda(dfm_pp, k = 5)
+
+terms(tmod_lda, 10)
+
+topics(tmod_lda)|>
+  head(10)
 ```
 
-
-# **Bonus**: Train your own naive bayes classifier for sentiment 
+# **Bonus**: Train your own naive bayes classifier for sentiment
 
 Get a training set from the labeled data and define classes:
+
 ```{r}
+library(quanteda.textmodels)
+
+#get a training set dfmat_train
+set.seed(123)
+
+# Specify the number of documents you want in your smaller training set
+num_docs <- 200  # Adjust this number as needed
+
+# Sample a subset of documents from the DFM
+dfm_train <- dfm_sample(dfm_pp, size = num_docs)
+
+# Print the smaller DFM to verify
+print(dfm_train)
+
+#define classes
+tmod_nb <- textmodel_nb(dfm_train, class)
+
+summary(tmod_nb)
+
+predicted_class <- predict(tmod_nb, dfm_train)
+
+tab_class <- table(class, predicted_class)
+caret::confusionMatrix(tab_class, mode = "everything")
 
 ```
 
 Train the model with the training data and classes:
+
 ```{r}
 
 ```
 
 Get (unlabelled) test data:
+
 ```{r}
 
 ```
 
 Predict class for test data with trained model:
+
 ```{r}
 
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
+
 ```{r}
 
 ```
