@@ -74,7 +74,7 @@ cnn_data_separated <- cnn_data_pre %>%
   separate(authors, into = paste0("author_", 1:max_author), sep = ";", fill = "right", extra = "merge")
 ```
 
-####  2. timestamp: Create the following three variables, and discard the rest of the information.
+#### 2. timestamp: Create the following three variables, and discard the rest of the information.
 
 a.  one that includes the information whether the article was updated or published on this date.
 b.  one that holds the weekday.
