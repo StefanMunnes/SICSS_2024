@@ -1,0 +1,196 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Data preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+```
+
+Load the data:
+
+```{r}
+data_fox <- readRDS("data/FOX.Rds")
+data_cnn <- readRDS("data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+```
+
+Use a smaller sample (if needed):
+
+```{r}
+set.seed(161)
+
+data_news <- slice_sample(data_news, n = 300)
+```
+
+# Inspect news data with quanteda workflow
+
+## Create corpus, tokens and DFM objects (without pre-processing)
+
+Create corpus object and get summary:
+
+```{r}
+corpus <- corpus(data_news, text_field = "body")
+
+summary(corpus, n = 10)
+```
+
+Create tokens object:
+
+```{r}
+tokens <- tokens(corpus, what = "word")
+```
+
+Create Document-Feature-Matrix:
+
+```{r}
+
+dfm <- dfm(tokens)
+head(dfm)
+```
+
+Show most frequent words (without pre-processing)
+
+```{r}
+textstat_frequency(dfm, n=20)
+```
+
+## Pre-process the text for more useful insights
+
+Remove unnecessary tokens and other text features, homogenize text:
+
+```{r}
+tokens_pp <- tokens(
+    corpus,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+```
+
+Inspect pre-processed DFM:
+
+```{r}
+dfm_pp <- dfm(tokens_pp)
+
+textstat_frequency(dfm_pp, n=20)
+```
+
+## Show most important compound and co-occuring words
+
+Show statistics for top 15 collocations:
+
+```{r}
+collocation <- textstat_collocations(tokens_pp)
+collocation %>%
+  arrange(desc(count)) %>%
+  head(15)
+```
+
+**Bonus**: Create a Feature-Coocurrence-Matrix and plot connection for top 40 words:
+
+```{r}
+fcm <- fcm(dfm_pp, context = "document",
+           ordered = TRUE)
+```
+
+## **Bonus**: Visualize differences in keywords by news outlet
+
+Check if keywords differ for different news outlets:
+
+```{r}
+tok_pp_fox <- tokens(
+    corpus(slice_sample(data_fox, n = 300), text_field = "body"),
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+
+tok_pp_cnn <- tokens(
+    corpus(slice_sample(data_cnn, n = 300), text_field = "body"),
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+
+dfm_pp_fox <- dfm(tok_fox)
+dfm_pp_cnn <- dfm(tok_cnn)
+  
+textstat_frequency(dfm_pp_fox, n=20)
+textstat_frequency(dfm_pp_cnn, n=20)
+
+coll_fox <- textstat_collocations(tok_pp_fox) |>
+  arrange(desc(count)) |>
+  head(15)
+
+coll_cnn <- textstat_collocations(tok_pp_cnn) |>
+  arrange(desc(count)) |>
+  head(15)
+```
+
+```{r}
+test <- corpus(data_news, text_field = "body",
+               docvars = data.frame(test = source))
+
+corpus <- corpus(data_news, text_field = "body")
+
+new_list <- c(stopwords("en"), "fox", "news", "getty", "images", "cnn", "digital", "photo", "click", "via")
+
+tokens <- tokens(
+    corpus,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_remove(new_list, padding = FALSE)
+
+dfm <- dfm(tokens, groups = data_news$source)
+
+keyness_result <- textstat_keyness(dfm, target = "fox") %>%
+  textplot_keyness()
+
+
+textstat_keyness(dfm_pp, target = docvars(corpus, "source") == "fox") |>
+  textplot_keyness()
+
+```
