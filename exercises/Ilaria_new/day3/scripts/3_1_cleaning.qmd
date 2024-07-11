@@ -90,6 +90,11 @@ a.  remove all capitalization
 b.  remove non-language (e.g., html-notation and excessive white spaces)
 
 ```{r}
+# remove capitalization
+df_ila <- df_ila %>% mutate(body = str_to_lower(body, locale = "en"))
+
+# remove non language
+df_ila <- df_ila %>% mutate(body=str_replace_all(body, "\\s+"," "))
 
 ```
 
@@ -98,6 +103,15 @@ b.  remove non-language (e.g., html-notation and excessive white spaces)
 #### 1. Count the length of articles, calculate the mean length of articles, and count the overall number of characters in this corpus
 
 ```{r}
+# count the length of articles
+df_ila <- df_ila %>%
+  mutate(char_count = nchar(body))
+
+# calculate mean length
+mean(df_ila$char_count)
+
+# count overall characters in the corpus
+sum(df_ila$char_count)
 
 ```
 
@@ -105,10 +119,19 @@ b.  remove non-language (e.g., html-notation and excessive white spaces)
 
 ```{r}
 
+# how often 
+df_ila <- df_ila %>%
+  mutate(BLM_count_art=str_count(body, regex("\\b(Black Lives Matter|BLM)\\b", ignore_case = TRUE)), BLM_count_tit=str_count(title, regex("\\b(Black Lives Matter|BLM)\\b", ignore_case = TRUE)))
+
+
 ```
 
 #### 3. Count the number of articles by month
 
 ```{r}
-
+# create year and month col
+df_ila <- df_ila %>%
+  mutate(year = year(date), month = month(date))
+# group by
+count_art <- df_ila %>% group_by(month, year) %>% count()
 ```
