@@ -1,0 +1,173 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Data preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+```
+
+Load the data:
+
+```{r}
+data_fox <- readRDS("data/FOX.Rds")
+data_cnn <- readRDS("data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+```
+
+Use a smaller sample (if needed):
+
+```{r}
+set.seed(161)
+
+data_news <- slice_sample(data_news, n = 300)
+```
+
+# Inspect news data with quanteda workflow
+
+## Create corpus, tokens and DFM objects (without pre-processing)
+
+Create corpus object and get summary:
+
+```{r}
+corpus <- corpus(data_cnn$body)
+
+# Get a summary of the corpus
+summary_corpus <- summary(corpus)
+
+# Print the summary
+print(summary_corpus)
+```
+
+Create tokens object:
+
+```{r}
+tokens <- tokens(corpus)
+tokens
+
+```
+
+Create Document-Feature-Matrix:
+
+```{r}
+dfm <- dfm(tokens)
+dfm
+```
+
+Show most frequent words (without pre-processing)
+
+```{r}
+
+```
+
+## Pre-process the text for more useful insights
+
+Remove unnecessary tokens and other text features, homogenize text:
+
+```{r}
+# Display the most frequent words
+top_features <- topfeatures(dfm, n = 20) # Adjust 'n' for the number of top words you want to display
+
+# Print the most frequent words
+print(top_features)
+```
+
+Inspect pre-processed DFM:
+
+```{r}
+tokens_pre_processed <- tokens(corpus, 
+                 what = "word", 
+                 remove_punct = TRUE, 
+                 remove_symbols = TRUE, 
+                 remove_numbers = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(stopwords("en")) %>%
+  tokens_wordstem()
+# Create a Document-Feature Matrix (DFM)
+dfm_pre_processed <- dfm(tokens_pre_processed)
+
+# Inspect the DFM
+print(dfm_pre_processed )
+summary(dfm_pre_processed )
+top_features_pre_processed <- topfeatures(dfm_pre_processed , n = 20)
+
+# Print the most frequent words after preprocessing
+print(top_features_pre_processed)
+```
+
+## Show most important compound and co-occuring words
+
+Show statistics for top 15 collocations:
+
+```{r}
+corpus_news <- corpus(data_news$body)
+summary_corpus_news <- summary(corpus_news)
+summary_corpus_news
+tokens_news <- tokens(corpus_news, 
+                 what = "word", 
+                 remove_punct = TRUE, 
+                 remove_symbols = TRUE, 
+                 remove_numbers = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(stopwords("en")) %>%
+  tokens_wordstem()
+# Create a Document-Feature Matrix (DFM)
+dfm_news <- dfm(tokens_news)
+
+# Inspect the DFM
+print(dfm_news)
+summary(dfm_news)
+top_features_news <- topfeatures(dfm_news , n = 20)
+
+# Print the most frequent words after preprocessing
+print(top_features_news)
+
+collocations_news <- textstat_collocations(tokens_news, size = 3, min_count = 3)
+collocations_news
+
+top_collocations <- collocations_news %>% 
+  arrange(desc(lambda)) %>% 
+  head(15)
+top_collocations
+```
+
+**Bonus**: Create a Feature-Coocurrence-Matrix and plot connection for top 40 words:
+
+```{r}
+
+
+tokens_pp <- tokens_compound(tokens_pp, pattern = phrase("black live matter"))
+
+fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = 3)
+topfeatures(fcm_pp)
+```
+
+## **Bonus**: Visualize differences in keywords by news outlet
+
+Check if keywords differ for different news outlets:
+
+```{r}
+
+```

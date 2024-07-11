@@ -26,42 +26,66 @@ text <- "   I hope you will have a great time during the 9 days of SICSS-Berlin.
 #### Is there a line break present? Show using a function
 
 ```{r}
+detect_line_break<-function(s){
+    return(str_detect(s, "\n"))
 
+}
+print(detect_line_break(text))
 ```
 
 #### Remove the line break
 
 ```{r}
+?str_remove
 
+remove_line_break<-str_remove(text,"\n")
+
+remove_line_break
 ```
 
 #### Remove the two "Orange"
 
 ```{r}
+remove_Orange <- str_remove_all(remove_line_break,"Orange")
 
+remove_Orange 
 ```
 
 #### Remove the unnecessary white spaces
 
 ```{r}
+remove_white_spaces <- str_replace_all(remove_Orange,"\\s+"," ")
 
+remove_white_spaces
 ```
 
 #### How long is this string? Count characters and words.
 
 ```{r}
+?count
+number_character<-nchar(remove_white_spaces)
 
+number_character
+
+?str_count
+
+number_word<-str_count(remove_white_spaces,"\\w+")
+number_word
 ```
 
 #### Extract the email address
 
 ```{r}
-
+?str_extract
+email_address <- str_extract(remove_white_spaces, "\\w+.?\\w+@.+\\..+.")
+email_address
 ```
 
 #### Change the text to all lower-case
 
 ```{r}
+?str_to_lower
+str_to_lower(remove_white_spaces, locale = "en")
 
 ```
 
@@ -96,7 +120,16 @@ texts <- c(
 #### Find all sentences that mention the word "apple" directly followed by"pie"
 
 ```{r}
+all_text <- paste(texts, collapse = " ")
 
+# Find all sentences mentioning "apple" directly followed by "pie"
+matches <- str_match_all(all_text, "\\bapple\\s+pie\\b")
+
+# Extract matched sentences
+matched_sentences <- unique(matches[[1]])
+
+# Print the matched sentences
+print(matched_sentences)
 ```
 
 #### Find all sentences where "pie" is not directly preceded by "apple"
