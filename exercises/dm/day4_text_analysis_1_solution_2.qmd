@@ -14,13 +14,11 @@ execute:
   error: false
 ---
 
+
 # Preparation
 
 Packages you will (probably) need:
-
 ```{r}
-install.packages("remotes")
-remotes::install_github("quanteda/quanteda.sentiment")
 library(dplyr)
 library(quanteda)
 library(quanteda.sentiment)
@@ -30,91 +28,69 @@ library(quanteda.textmodels)
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
 
+
 # Perform a sentiment analysis
 
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
-
 ```{r}
 
 head(data_dictionary_HuLiu)
 head(data_dictionary_LSD2015)
+lapply(valence(data_dictionary_AFINN), head, 10)
+lapply(valence(data_dictionary_ANEW), head, 10)
+
 
 dict_pol <- data_dictionary_HuLiu
 
 dfm_lookup(dfm_pp, dict_pol)
 
-textstat_polarity(dfm_pp, dict_pol)
-
-textstat_valence(dfm_pp, data_dictionary_AFINN)
+polarity <- textstat_polarity(dfm_pp, dict_pol)
 ```
+
 
 # Perform a topic models analysis
 
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
-
 ```{r}
-library(quanteda.textmodels)
-library(seededlda)
-
-tmod_lda <- textmodel_lda(dfm_pp, k = 5)
+tmod_lda <- textmodel_lda(dfm_pp[1:700, ], k = 5)
 
 terms(tmod_lda, 10)
 
-topics(tmod_lda)|>
-  head(10)
+topics(tmod_lda)
 ```
 
-# **Bonus**: Train your own naive bayes classifier for sentiment
+
+# **Bonus**: Train your own naive bayes classifier for sentiment 
 
 Get a training set from the labeled data and define classes:
-
 ```{r}
-library(quanteda.textmodels)
+dfm_pp_train <- dfm_pp[1:700, ]
 
-#get a training set dfmat_train
-set.seed(123)
+sentiment_class <- cut(
+  polarity$sentiment,
+  breaks = c(-4, -0.2, 0.2, 4),
+  labels = c("negative", "neutral", "positive")
+)
 
-# Specify the number of documents you want in your smaller training set
-num_docs <- 200  # Adjust this number as needed
-
-# Sample a subset of documents from the DFM
-dfm_train <- dfm_sample(dfm_pp, size = num_docs)
-
-# Print the smaller DFM to verify
-print(dfm_train)
-
-#define classes
-tmod_nb <- textmodel_nb(dfm_train, class)
-
-summary(tmod_nb)
-
-predicted_class <- predict(tmod_nb, dfm_train)
-
-tab_class <- table(class, predicted_class)
-caret::confusionMatrix(tab_class, mode = "everything")
-
+sentiment_class_train <- sentiment_class[1:700]
 ```
 
 Train the model with the training data and classes:
-
 ```{r}
-
+model_nb <- textmodel_nb(dfm_pp_train, sentiment_class)
 ```
 
 Get (unlabelled) test data:
-
 ```{r}
-
+dfm_pp_test <- dfm_pp[701:1000, ]
 ```
 
 Predict class for test data with trained model:
-
 ```{r}
-
+predictions_sent <- predict(model_nb, dfm_pp_test)
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
-
 ```{r}
-
+table(Predicted = predictions_sent, Actual = sentiment_class[701:1000])
 ```
