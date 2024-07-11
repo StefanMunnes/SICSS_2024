@@ -17,14 +17,17 @@ execute:
 # Data preparation
 
 Packages you will (probably) need:
+
 ```{r}
 library(dplyr)
 library(quanteda)
 library(quanteda.textstats)
 library(quanteda.textplots)
+
 ```
 
-Load the data: 
+Load the data:
+
 ```{r}
 data_fox <- readRDS("data/FOX.Rds")
 data_cnn <- readRDS("data/CNN.Rds")
@@ -36,68 +39,99 @@ data_news <- bind_rows(
 ```
 
 Use a smaller sample (if needed):
+
 ```{r}
 set.seed(161)
-
+print(nrow(data_news))
 data_news <- slice_sample(data_news, n = 300)
+print(nrow(data_news))
 ```
-
 
 # Inspect news data with quanteda workflow
 
 ## Create corpus, tokens and DFM objects (without pre-processing)
 
 Create corpus object and get summary:
-```{r}
 
+```{r}
+data_corpus <- corpus(data_news, text_field = "body")
 ```
 
 Create tokens object:
-```{r}
 
+```{r}
+tokens <- tokens(data_corpus, what = "word")
 ```
 
 Create Document-Feature-Matrix:
-```{r}
 
+```{r}
+dfm <- dfm(tokens)
 ```
 
 Show most frequent words (without pre-processing)
-```{r}
 
+```{r}
+topfeatures(dfm, 10)
 ```
 
+```{r}
+textstat_frequency(dfm, n = 10)
+```
 
 ## Pre-process the text for more useful insights
 
 Remove unnecessary tokens and other text features, homogenize text:
+
 ```{r}
+tokens_pp <- tokens(
+    data_corpus,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  #tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
 
 ```
-
 
 Inspect pre-processed DFM:
+
 ```{r}
-
+dfm_pp <- dfm(tokens_pp)
+textstat_frequency(dfm_pp, n = 10)
 ```
-
 
 ## Show most important compound and co-occuring words
 
-Show statistics for top 15 collocations: 
-```{r}
+Show statistics for top 15 collocations:
 
+```{r}
+texstat_coll <- textstat_collocations(tokens_pp, size = 2)
+texstat_coll_top15 <- head(texstat_coll, 15)
 ```
 
 **Bonus**: Create a Feature-Coocurrence-Matrix and plot connection for top 40 words:
+
 ```{r}
+fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = 3)
+#textstat_frequency(dfm_pp, n=40)
+# Get the top 40 features from the DFM
+top_features_df <- textstat_frequency(dfm_pp, n = 40)
+top_features <- top_features_df$feature
+fcm_trimmed <- fcm_select(fcm_pp, pattern = top_features)
 
+# Plot the FCM
+textplot_network(fcm_trimmed, min_freq = 0.1)  # Adjust min_freq as needed
 ```
-
 
 ## **Bonus**: Visualize differences in keywords by news outlet
 
 Check if keywords differ for different news outlets:
+
 ```{r}
 
 ```
