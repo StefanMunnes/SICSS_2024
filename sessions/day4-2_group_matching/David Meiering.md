@@ -9,7 +9,7 @@ General Topic: **Debates about banning gender neutral language in German State P
 Project Summary: **Since 2021, there has been a series of bans of gender neutral language in German State administrations and institutions (universities, schools, public administration). This projects wants to find out, whether it's the entrance of the AfD party in state parliaments that drove debate trends towards topics related to gender neutral language or if it is a trend independant of the AfD (driven by CDU or a general trend).**
 <!-- What is your specific research idea, if you have one? -->
 
-Probable Method: **keyword occurrences by party over time, maybe topic modelling for different legislatives periods, maybe modelling interaction between parties over time (two-mode networks) **
+Probable Method: **keyword occurrences by party over time, maybe topic modelling for different legislative periods, maybe modelling interactions between parties over time (two-mode networks: party - topic/keyword/motion) **
 <!-- What would your preferred method of analysis be? And how do you rate your own skill level with that method? -->
 
 Data: ***I know where to get the data, but I am having trouble to use it: https://github.com/texttechnologylab/GerParCor** 
