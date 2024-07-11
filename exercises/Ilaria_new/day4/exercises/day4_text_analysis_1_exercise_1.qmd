@@ -1,0 +1,103 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Data preparation
+
+Packages you will (probably) need:
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+```
+
+Load the data: 
+```{r}
+data_fox <- readRDS("data/FOX.Rds")
+data_cnn <- readRDS("data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+```
+
+Use a smaller sample (if needed):
+```{r}
+set.seed(161)
+
+data_news <- slice_sample(data_news, n = 300)
+```
+
+
+# Inspect news data with quanteda workflow
+
+## Create corpus, tokens and DFM objects (without pre-processing)
+
+Create corpus object and get summary:
+```{r}
+
+```
+
+Create tokens object:
+```{r}
+
+```
+
+Create Document-Feature-Matrix:
+```{r}
+
+```
+
+Show most frequent words (without pre-processing)
+```{r}
+
+```
+
+
+## Pre-process the text for more useful insights
+
+Remove unnecessary tokens and other text features, homogenize text:
+```{r}
+
+```
+
+
+Inspect pre-processed DFM:
+```{r}
+
+```
+
+
+## Show most important compound and co-occuring words
+
+Show statistics for top 15 collocations: 
+```{r}
+
+```
+
+**Bonus**: Create a Feature-Coocurrence-Matrix and plot connection for top 40 words:
+```{r}
+
+```
+
+
+## **Bonus**: Visualize differences in keywords by news outlet
+
+Check if keywords differ for different news outlets:
+```{r}
+
+```

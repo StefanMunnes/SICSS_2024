@@ -65,7 +65,7 @@ library(tidyr)
 max_authors <- max(sapply(strsplit(cnn_data$authors, ";"), length))
 
 # Separate the 'author' column into multiple columns
-cnn_data_seperated <- cnn_data %>%
+cnn_data <- cnn_data %>%
   separate(authors, into = paste0("author_", 1:max_authors), sep = ";", fill = "right")
 
 # View the modified dataframe: click on df

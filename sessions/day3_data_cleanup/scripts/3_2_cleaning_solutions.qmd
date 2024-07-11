@@ -167,23 +167,23 @@ The \^ says that we are starting at the beginning of the string.
 
 First name:
 
-(\[:alpha:\]\\\\.)? \<\-- Optional one letter followed by a dot, to account for people that use their second first name, like this guy: W. Kamau Bell
+(\[:alpha:\]\\\\.)? \<-- Optional one letter followed by a dot, to account for people that use their second first name, like this guy: W. Kamau Bell
 
-\[:alpha:\]+ \<\-- Either following the abbreviated first name or as the first thing in the string, any multiple letters ...
+\[:alpha:\]+ \<-- Either following the abbreviated first name or as the first thing in the string, any multiple letters ...
 
-(\\\\s\[:alpha:\]\\\\.)? \<\-- ... which might be followed by a space followed by one letter and a dot. This is to captured these people: Zachary B. Wolf
+(\\\\s\[:alpha:\]\\\\.)? \<-- ... which might be followed by a space followed by one letter and a dot. This is to captured these people: Zachary B. Wolf
 
 If neither of the two optional things is present, we just have a basic first name: Veronica Stracqualursi.
 
-(?!,) \<\-- This says that there should be no comma in this position. This is to ensure that the name isn't already flipped (otherwise it would flip it again and "Last, First" becomes "First, Last")
+(?!,) \<-- This says that there should be no comma in this position. This is to ensure that the name isn't already flipped (otherwise it would flip it again and "Last, First" becomes "First, Last")
 
-\\\\s \<\-- mandatory whitespace
+\\\\s \<-- mandatory whitespace
 
 Surname:
 
-(.+(-.+)?) \<\-- One or more characters, which MAY be followed by a hyphen and more characters, this identifies the surnames (*This only works because the previous groups did not capture a second name, otherwise double surnames that are not connected by a hyphen, which is common in the US, would break this, e.g., Peter Smith Meyer.)*
+(.+(-.+)?) \<-- One or more characters, which MAY be followed by a hyphen and more characters, this identifies the surnames (*This only works because the previous groups did not capture a second name, otherwise double surnames that are not connected by a hyphen, which is common in the US, would break this, e.g., Peter Smith Meyer.)*
 
-\$ \<\-- end of string.
+\$ \<-- end of string.
 
 *Note that this solution only works, because CNN seems to always abbreviate middle names, therefore we can be sure that if there is a full "word" in the middle, it is part of the surname (since Americans do not necessarily use a hyphen in between two last names). If this was not the case this task would be even more complicated.*
 
