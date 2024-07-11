@@ -1,5 +1,5 @@
 ---
-title: "Text Analysis I - Exercise I"
+title: "Text Analysis I - Exercise II"
 date: July 11, 2024
 format: 
   html:
@@ -14,60 +14,89 @@ execute:
   error: false
 ---
 
-
 # Preparation
 
 Packages you will (probably) need:
+
 ```{r}
+install.packages("seededlda")
+library(remotes)
+#install_github("quanteda/quanteda.sentiment")
 library(dplyr)
 library(quanteda)
 library(quanteda.sentiment)
 library(seededlda)
 library(quanteda.textmodels)
+
 ```
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
 
-
 # Perform a sentiment analysis
 
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
+
 ```{r}
+# full data in dataframeframe data_news
+# Classes for label data
+dict_pol <- data_dictionary_HuLiu
+dfm_lookup(dfm_pp, dict_pol)
+#tmod_nb <- textmodel_nb(dfm_pp, dict_pol)
+#summary(tmod_nb)
 
+#predicted_class <- predict(tmod_nb, dfmat_test)
+
+#tab_class <- table(class, predicted_class)
+#caret::confusionMatrix(tab_class, mode = "everything")
+#pol1 <- textstat_polarity(dfm_pp, data_dictionary_HuLiu)
+#pol2 <- textstat_polarity(dfm_pp, data_dictionary_LoughranMcDonald)
+#poldiff <- table(pol1$sentiment, pol2$sentiment)
+
+textstat_valence(dfm_pp, data_dictionary_AFINN)
+textstat_valence(dfm_pp, data_dictionary_sentiws)
 ```
-
 
 # Perform a topic models analysis
 
-Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
+Use the quantda.texmodel function for a explorative approach or define some seeds if you expect some topics with seeded lda:
+
 ```{r}
+tmod_lda <- textmodel_lda(dfm_pp, k = 5)
+
+terms(tmod_lda, 15)
+
+topics(tmod_lda)
 
 ```
 
-
-# **Bonus**: Train your own naive bayes classifier for sentiment 
+# **Bonus**: Train your own naive bayes classifier for sentiment
 
 Get a training set from the labeled data and define classes:
+
 ```{r}
 
 ```
 
 Train the model with the training data and classes:
+
 ```{r}
 
 ```
 
 Get (unlabelled) test data:
+
 ```{r}
 
 ```
 
 Predict class for test data with trained model:
+
 ```{r}
 
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
+
 ```{r}
 
 ```

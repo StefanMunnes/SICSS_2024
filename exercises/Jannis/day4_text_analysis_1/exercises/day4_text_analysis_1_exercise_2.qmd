@@ -14,14 +14,13 @@ execute:
   error: false
 ---
 
+
 # Preparation
 
 Packages you will (probably) need:
-
 ```{r}
 library(dplyr)
 library(quanteda)
-#remotes::install_github("https://github.com/quanteda/quanteda.sentiment")
 library(quanteda.sentiment)
 library(seededlda)
 library(quanteda.textmodels)
@@ -29,84 +28,46 @@ library(quanteda.textmodels)
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
 
+
 # Perform a sentiment analysis
 
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
-
 ```{r}
 
-library(quanteda.textstats)
-
-dict_pol <- data_dictionary_HuLiu
-dfm_lookup(dfm, dict_pol)
-
-textstat_polarity(dfm, dict_pol)
-
-textstat_valence(dfm, data_dictionary_AFINN)
 ```
+
 
 # Perform a topic models analysis
 
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
-
 ```{r}
 
-tmod_lda <- textmodel_lda(dfm, k = 5)
-
-terms(tmod_lda, 10)
-
-topics(tmod_lda)
 ```
 
-# **Bonus**: Train your own naive bayes classifier for sentiment
+
+# **Bonus**: Train your own naive bayes classifier for sentiment 
 
 Get a training set from the labeled data and define classes:
-
 ```{r}
-
-set.seed(1)  
-
-articles_select <- sample(1:58, size = 35, replace = FALSE)
-
-dfmat_train <- corpus %>%
-corpus_subset(id %in% article_select) %>%
-
-dfm()
-dfmat_test <- corpus %>%
-corpus_subset(!id %in% articles_select) %>%
-# speech not in id
-dfm()
 
 ```
 
 Train the model with the training data and classes:
-
 ```{r}
 
-tmod_nb <- textmodel_nb(dfmat_train, class)
-
-summary(tmod_nb)
-
-predicted_class <- predict(tmod_nb, dfmat_test)
-
-tab_class <- table(class, predicted_class)
-caret::confusionMatrix(tab_class, mode = "everything")
 ```
 
 Get (unlabelled) test data:
-
 ```{r}
 
 ```
 
 Predict class for test data with trained model:
-
 ```{r}
 
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
-
 ```{r}
 
 ```

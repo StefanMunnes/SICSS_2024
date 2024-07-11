@@ -12,6 +12,9 @@ Project Summary: **HERE**
 Probable Method: **HERE**
 <!-- What would your preferred method of analysis be? And how do you rate your own skill level with that method? -->
 
+Data: **I have the data** / **I know where to get the data** / **I don't know where to get the data yet**
+<!-- Delete the options that do not apply to you! -->
+
 Preferred Output: **HERE**
 <!-- What is your preferred outcome of this group work, i.e. do you want to continue working on this project after the Summer Institute and possibly develop it into a paper OR do you "just" want to use it as practice in the context of this Summer Institute? -->
 
