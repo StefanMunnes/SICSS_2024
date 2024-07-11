@@ -24,6 +24,12 @@ library(quanteda)
 library(quanteda.sentiment)
 library(seededlda)
 library(quanteda.textmodels)
+library(quanteda.textstats)
+
+# Added by me:
+library(tidyverse)
+library(ggplot2)
+library(tidytext)
 ```
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
@@ -34,6 +40,14 @@ Get a dictionary from the quanteda.sentiment package and calculate the polarity 
 
 ```{r}
 
+dict_pol <- data_dictionary_HuLiu
+
+dfm_lookup(dfm_pp, dict_pol)
+
+docsentiment <- textstat_polarity(dfm_pp, dict_pol)
+
+textstat_valence(dfm_pp, data_dictionary_AFINN)
+
 ```
 
 # Perform a topic models analysis
@@ -42,6 +56,31 @@ Use the quantda.texmodel function for a explorativ approach or define some seeds
 
 ```{r}
 
+textmodel_lda(dfm_pp_sm)
+
+tmod_lda <- textmodel_lda(dfm_pp_sm, k = 8)
+
+terms(tmod_lda, 12)
+
+# Trying visualizations: 
+
+tmod_lda_2 <- LDA(dfm_pp_sm, k = 8, control = list(seed = 1234))
+
+topics <- tidy(tmod_lda_2, matrix = "beta")
+
+top_terms <- topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 10) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
 ```
 
 # **Bonus**: Train your own naive bayes classifier for sentiment
@@ -49,6 +88,18 @@ Use the quantda.texmodel function for a explorativ approach or define some seeds
 Get a training set from the labeled data and define classes:
 
 ```{r}
+
+library(quanteda.textmodels)
+
+tmod_nb <- textmodel_nb(dfmat_train, class)
+
+summary(tmod_nb)
+
+predicted_class <- predict(tmod_nb, dfmat_test)
+
+tab_class <- table(class, predicted_class)
+caret::confusionMatrix(tab_class, mode = "everything")
+
 
 ```
 
