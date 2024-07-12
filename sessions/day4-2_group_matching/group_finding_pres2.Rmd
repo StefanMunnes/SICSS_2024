@@ -1,0 +1,51 @@
+---
+title: "Group Finding"
+author: "AS"
+date: "2024-07-11"
+output: html_document
+---
+<style type="text/css">
+
+body, td {
+   font-size: 28px;
+}
+code.r{
+  font-size: 12px;
+}
+pre {
+  font-size: 12px
+}
+</style>
+
+<hr>
+
+## Jing
+
+Project Title: **First Person Narratives of the American South. it is a collection of diaries, autobiographies, memoirs, travel accounts, and ex-slave narratives written by Southerners. The majority of materials in this collection are written by those Southerners whose voices were less prominent in their time, including African Americans, women, enlisted men, laborers, and Native Americans.**
+"First-Person Narratives of the American South" is a collection of diaries, autobiographies, memoirs, travel accounts, and ex-slave narratives written by Southerners. The majority of materials in this collection are written by those Southerners whose voices were less prominent in their time, including African Americans, women, enlisted men, laborers, and Native Americans.
+<!-- Preferably one word or an abbreviation -->
+
+General Topic: **HERE**
+<!-- What is your general topic / research field of interest (e.g., gender, extremism, social movements)? -->
+
+Project Summary: **HERE**
+<!-- What is your specific research idea, if you have one? -->
+
+Probable Method: **sentiment analysis, named entity recognition...**
+<!-- What would your preferred method of analysis be? And how do you rate your own skill level with that method? -->
+
+Data: **I have the data https://www.kaggle.com/datasets/docsouth-data/first-person-narratives-of-the-american-south**  
+https://www.kaggle.com/datasets/docsouth-data/first-person-narratives-of-the-american-south
+Filename
+Author
+Title
+Date
+URL
+URL(text-only)
+full_text 
+<!-- Delete the options that do not apply to you! -->
+
+Preferred Output: **HERE**
+<!-- What is your preferred outcome of this group work, i.e. do you want to continue working on this project after the Summer Institute and possibly develop it into a paper OR do you "just" want to use it as practice in the context of this Summer Institute? -->
+
+What is your skill level in R (1-10)? **<2**

@@ -1,0 +1,167 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Data preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+```
+
+Load the data:
+
+```{r}
+getwd()
+# wd is my folder so need to read in the files w the complete file path
+data_fox <- readRDS("~/sciebo - Hoffmeyer-Zlotnik, Paula (phoffmey@uni-koeln.de)@uni-koeln.sciebo.de/PostDoc/Konferenzen Schools Workshops/2024 SICSS Berlin/Materials and Exercises/SICSS_2024/SCISS_2024/SICSS_2024/data/FOX.Rds")
+data_cnn <- readRDS("~/sciebo - Hoffmeyer-Zlotnik, Paula (phoffmey@uni-koeln.de)@uni-koeln.sciebo.de/PostDoc/Konferenzen Schools Workshops/2024 SICSS Berlin/Materials and Exercises/SICSS_2024/SCISS_2024/SICSS_2024/data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+```
+
+Use a smaller sample (if needed):
+
+```{r}
+set.seed(161)
+
+data_news <- slice_sample(data_news, n = 300)
+```
+
+# Inspect news data with quanteda workflow
+
+## Create corpus, tokens and DFM objects (without pre-processing)
+
+Create corpus object and get summary:
+
+```{r}
+
+# to create a corpus with docvars
+library(stringr)
+docvars <- data_news |> 
+          select(-body) 
+
+
+print(docvars)
+
+corpus_news <- corpus(data_news$body, docvars = docvars)
+summary(corpus_news)
+```
+
+Create tokens object:
+
+```{r}
+tokens_news <- tokens(corpus_news, what = "word")
+```
+
+Create Document-Feature-Matrix:
+
+```{r}
+dfm_news <- dfm(tokens_news)
+```
+
+Show most frequent words (without pre-processing)
+
+```{r}
+textstat_frequency(dfm_news)
+# the, , , ., to, and...
+```
+
+## Pre-process the text for more useful insights
+
+Remove unnecessary tokens and other text features, homogenize text:
+
+```{r}
+tokens_news <- tokens(corpus_news, what = "word",
+                  remove_punct = TRUE,
+                    remove_symbols = TRUE,
+                    remove_numbers = TRUE,
+                    remove_separators = TRUE ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+
+dfm_news <- dfm(tokens_news)
+```
+
+Inspect pre-processed DFM:
+
+```{r}
+summary(dfm_news) # not super informative
+
+textstat_frequency(dfm_news) # trump and biden most frequent words
+```
+
+## Show most important compound and co-occuring words
+
+Show statistics for top 15 collocations:
+
+```{r}
+coll <- textstat_collocations(tokens_news, size = 2:4) 
+
+coll <- coll |> 
+          arrange(desc(count))
+
+head(coll, 15)
+
+coll15 <- coll |> 
+  slice_head(n = 15) 
+
+  table(coll15$collocation, coll15$count)
+
+
+```
+
+**Bonus**: Create a Feature-Coocurrence-Matrix and plot connection for top 40 words:
+
+```{r}
+
+```
+
+## **Bonus**: Visualize differences in keywords by news outlet
+
+Check if keywords differ for different news outlets:
+
+```{r}
+# first go back to corpus and include docvars
+# comment: this was not actually necessary...
+
+# then create the dfm based on this
+tokens_news <- tokens(corpus_news, what = "word",
+                  remove_punct = TRUE,
+                    remove_symbols = TRUE,
+                    remove_numbers = TRUE,
+                    remove_separators = TRUE ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+
+dfm_news <- dfm(tokens_news)
+
+
+dfm_source <- dfm_group(dfm_news, groups = source)
+
+# Then compute keyness measure (differential associations of keywords between groups)
+result_keyness <- textstat_keyness(dfm_source) # true here: cell value not logical operation
+# Plot estimated word keyness
+keyness_plot <- textplot_keyness(result_keyness)
+```
