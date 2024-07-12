@@ -1,0 +1,23 @@
+# TITLE
+
+## Members
+Kaylee, Lulu, Boris, Jing
+
+## Short summary of what you plan to achieve during SICSS
+
+
+Project Summary: **Education Inequality in the News**
+--> How is education inequality conceptualized in American news outlets? Is it primarily in terms of social class/income, gender, or race/ethnicity? 
+
+Data Source: cnn and/or fox (comparison?)
+df: title, text, published date
+
+Method:
+1. web scraping 
+2. data preprocessing
+3. data analysis
+topic clustering: unsupervised learning: tf/idf, LDA
+word embeddings
+LLM?
+sentiment towards one specific (digital) education tool?
+
