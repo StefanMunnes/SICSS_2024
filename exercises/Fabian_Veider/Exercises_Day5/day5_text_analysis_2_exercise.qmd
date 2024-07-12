@@ -47,6 +47,10 @@ API-Key: 1. part in file + 2. part: **DahpUIy8A**
 
 Store the full key in your local environment and load with `{r}Sys.getenv("openai")`
 
+```{r}
+Sys.getenv("api_key")
+```
+
 # Sentence Embeddings and Clustering
 
 We want to cluster our data into groups according to similar topics. To do this, we can calculate the similarity (or distance) of the article headlines. To do this, we need to calculate embeddings of the headings that encapsulate the meaning. You can choose between different providers of embedding models. Choose your provider, a good model and the implementation in Python and/or R.
@@ -56,7 +60,160 @@ We want to cluster our data into groups according to similar topics. To do this,
 *OpenAI: install (with conda) and import OpenAI python library; set and get OpenAI API key for API call* *Huggingface: install (with conda) and import sentence-transformers python library*
 
 ```{r}
+# Convert the R dataframe to a pandas dataframe
+# Import the pandas library in Python
+pandas <- import("pandas")
 
+# Convert the R dataframe to a pandas dataframe
+data_py <- r_to_py(data_news)
+```
+
+```{python}
+r.data_py.head()
+print(r.data_py)
+```
+
+```{python}
+titles_py = r.data_py['title'].to_list()
+print(titles_py)
+from sentence_transformers import SentenceTransformer
+sentences = titles_py
+
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+embeddings = model.encode(sentences)
+#print(len(embeddings[0]))
+#print(embeddings)
+```
+
+```{r}
+install.packages("Rtsne")
+library(stats)
+library(Rtsne)
+library(ggplot2)
+```
+
+```{r}
+# Convert the Python numpy array to an R matrix
+embeddings_matrix <- py_to_r(py$embeddings)
+# Set the number of clusters
+k <- 4
+
+# Perform K-means clustering
+set.seed(42)
+kmeans_result <- kmeans(embeddings_matrix, centers = k, nstart = 25)
+
+# Get the cluster labels
+labels <- kmeans_result$cluster
+
+# Perform t-SNE
+tsne_result <- Rtsne(embeddings_matrix, dims = 2, perplexity = 3, verbose = TRUE, max_iter = 1000)
+
+# Get the t-SNE coordinates
+embeddings_2d <- tsne_result$Y
+
+# Create a dataframe for ggplot
+plot_data <- data.frame(
+  
+  TSNE1 = embeddings_2d[, 1],
+  TSNE2 = embeddings_2d[, 2],
+  Cluster = as.factor(labels)
+)
+
+# Plot the clusters
+ggplot(plot_data, aes(x = TSNE1, y = TSNE2, color = Cluster)) +
+  geom_point(size = 3) +
+  labs(title = "Clustering of Embedded Titles",
+       x = "t-SNE Component 1",
+       y = "t-SNE Component 2") +
+  theme_minimal() +
+  scale_color_discrete(name = "Cluster")
+
+```
+
+```{r}
+set.seed(123)
+data <- data.frame(
+  x = rnorm(100),
+  y = rnorm(100)
+)
+
+# Create a scatter plot using ggplot2
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 3) +
+  labs(title = "Scatter Plot Example", x = "X-axis", y = "Y-axis") +
+  theme_minimal()
+```
+
+```{python}
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+
+
+# Choose the number of clusters (k)
+k = 4 
+
+# Fit the KMeans model
+kmeans = KMeans(n_clusters=k, random_state=42)
+kmeans.fit(embeddings)
+
+# Get the cluster labels
+labels = kmeans.labels_
+
+# Visualize the clusters using t-SNE
+tsne = TSNE(n_components=2, random_state=42)
+embeddings_2d = tsne.fit_transform(embeddings)
+
+# Plot the clusters
+plt.figure(figsize=(10, 8))
+for i in range(k):
+    plt.scatter(embeddings_2d[labels == i, 0], embeddings_2d[labels == i, 1], label=f'Cluster {i}')
+plt.legend()
+plt.title('Clustering of Embedded Titles')
+plt.xlabel('TSNE Component 1')
+plt.ylabel('TSNE Component 2')
+plt.show()
+
+
+```
+
+```{python}
+import matplotlib.pyplot as plt
+
+# Example data
+x = [1, 2, 3, 4, 5]
+y = [2, 3, 5, 7, 11]
+
+# Create a line plot
+plt.plot(x, y, marker='o', linestyle='-', color='b', label='Prime numbers')
+
+# Add titles and labels
+plt.title('Simple Line Plot Example')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+
+# Show legend
+plt.legend()
+
+# Display the plot
+plt.show()
+```
+
+```{r}
+# Sentence embedding using OpenAI
+openai <- import("openai")
+
+client <- openai$OpenAI("api_key")
+get_embeddings <- function(text, model = "text-embedding-3-small") {
+  client$embeddings$create(input = text, model = model)$data[[1]]$embedding
+}
+
+embedd_ls <- lapply(<TEXT>, get_embeddings)
+
+embedd <- do.call(rbind, embedd_ls)
+
+lsa::cosine(embedd)
 ```
 
 ## Clustering
