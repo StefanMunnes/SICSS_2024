@@ -342,6 +342,29 @@ print(completion.choices[0].message)
 - in R use \$ instead of . to combine functions
 
 
+---
+
+You have to add `use_python()` function with the correct path to your python installation to connect python to R with reticulate once before you can use it!
+
+For me (Windows and miniconda instead of anaconda) it's:
+
+```r
+use_python("C:/Users/munnes/AppData/Local/miniconda3")
+```
+
+You can find this path by opening Anaconda Prompt and enter:
+
+```powershell
+where python
+```
+
+For **macOS** should be one of:
+
+- /Users/<your-username>/anaconda3
+  
+- /opt/anaconda3
+ 
+
 # Similarity: **Sentence embeddings from OpenAI**
 
 ```r
