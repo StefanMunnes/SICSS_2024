@@ -260,6 +260,11 @@ decoder -> transform input text to sequence output of text (next token predictio
 * model parameters vs [hyperparameters](https://michaelehab.medium.com/the-secrets-of-large-language-models-parameters-how-they-affect-the-quality-diversity-and-32eb8643e631)
 
 
+---
+
+[Visualize generative AI](https://ig.ft.com/generative-ai/) (by financial time)
+
+
 # Language Models: **Access**
 
 Most famous are (commercial) products like Chatbots (e.g. ChatGPT) or specialized tools (e.g. Copilot).
