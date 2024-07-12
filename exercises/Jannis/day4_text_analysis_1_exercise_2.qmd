@@ -7,6 +7,7 @@ format:
     number-sections: true
 editor: visual
 execute: 
+
   eval: false
   echo: true
   output: false
@@ -24,6 +25,7 @@ library(quanteda)
 library(quanteda.sentiment)
 library(seededlda)
 library(quanteda.textmodels)
+library(quanteda.textstats)
 ```
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
@@ -33,18 +35,33 @@ Use the script from exercise 1 to get all the necessary objects for the analysis
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
 
 ```{r}
+data_fox <- readRDS("C:/Users/hertel/data/FOX.Rds")
+data_cnn <- readRDS("C:/Users/hertel/data/CNN.Rds")
 
-head(data_dictionary_HuLiu)
-head(data_dictionary_LSD2015)
-lapply(valence(data_dictionary_AFINN), head, 10)
-lapply(valence(data_dictionary_ANEW), head, 10)
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
 
+corpus <- corpus(data_news, text_field = "body")
+tokens <- tokens(corpus, what = "word")
+dfm <- dfm(tokens)
 
-dict_pol <- data_dictionary_HuLiu
+tokens_pre <- tokens(
+  corpus,
+  what = "word",
+  remove_punct = TRUE,
+  remove_symbols = TRUE,
+  remove_numbers = TRUE,
+  remove_separators = TRUE
+  )|>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+dfm_pre <- dfm(tokens_pre)
 
-dfm_lookup(dfm_pp, dict_pol)
+dfm_tfidf <- dfm_tfidf(dfm_pre)
 
-polarity <- textstat_polarity(dfm_pp, dict_pol)
 ```
 
 # Perform a topic models analysis
@@ -52,11 +69,12 @@ polarity <- textstat_polarity(dfm_pp, dict_pol)
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
 
 ```{r}
-tmod_lda <- textmodel_lda(dfm_pp[1:700, ], k = 5)
+dict_pol <- data_dictionary_HuLiu
+dfm_lookup(dfm_pre, dict_pol)
+textstat_polarity(dfm_pre, dict_pol)
+textstat_valence(dfm_pre, data_dictionary_AFINN)
 
-terms(tmod_lda, 10)
 
-topics(tmod_lda)
 ```
 
 # **Bonus**: Train your own naive bayes classifier for sentiment
@@ -64,37 +82,29 @@ topics(tmod_lda)
 Get a training set from the labeled data and define classes:
 
 ```{r}
-dfm_pp_train <- dfm_pp[1:700, ]
 
-sentiment_class <- cut(
-  polarity$sentiment,
-  breaks = c(-4, -0.2, 0.2, 4),
-  labels = c("negative", "neutral", "positive")
-)
-
-sentiment_class_train <- sentiment_class[1:700]
 ```
 
 Train the model with the training data and classes:
 
 ```{r}
-model_nb <- textmodel_nb(dfm_pp_train, sentiment_class)
+
 ```
 
 Get (unlabelled) test data:
 
 ```{r}
-dfm_pp_test <- dfm_pp[701:1000, ]
+
 ```
 
 Predict class for test data with trained model:
 
 ```{r}
-predictions_sent <- predict(model_nb, dfm_pp_test)
+
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
 
 ```{r}
-table(Predicted = predictions_sent, Actual = sentiment_class[701:1000])
+
 ```

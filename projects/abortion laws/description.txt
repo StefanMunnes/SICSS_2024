@@ -1,0 +1,7 @@
+# TITLE
+
+## Mai, Jannis, Friederike, Melissa
+..
+
+## Sentiment analysis on news articles covering abortion laws in Time magazine and their associated comments.
+... 
