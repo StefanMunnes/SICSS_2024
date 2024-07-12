@@ -21,7 +21,22 @@ Packages you will (probably) need:
 ```{r}
 library(dplyr)
 library(reticulate)
+library(huggingfaceR)
+
+
+library(tensorflow)
+#install_tensorflow(envname = "r-tensorflow")
+
+
+#hf_python_depends('transformers')
+#remotes::install_github("rstudio/tensorflow")
+#remotes::install_github("farach/huggingfaceR")
+#install_miniconda()
+
+reticulate::repl_python()
 ```
+
+\
 
 Load the data:
 
@@ -43,7 +58,13 @@ set.seed(161)
 data_news <- slice_sample(data_news, n = 20)
 ```
 
-API-Key: 1. part in file + 2. part: **DahpUIy8A**
+API-Key: 1. part in file + 2. part: DahpUIy8A
+
+```{r}
+file.edit("~/.Renviron")
+
+Sys.getenv("open_ai_tempkey") 
+```
 
 Store the full key in your local environment and load with `{r}Sys.getenv("openai")`
 
@@ -57,6 +78,13 @@ We want to cluster our data into groups according to similar topics. To do this,
 
 ```{r}
 
+distilBERT <- hf_load_pipeline(
+  model_id = "distilbert-base-uncased-finetuned-sst-2-english", 
+  task = "text-classification"
+  )
+
+
+reticulate::py_last_error()
 ```
 
 ## Clustering
