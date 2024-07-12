@@ -1,0 +1,80 @@
+---
+title: "Text Analysis II - Exercise"
+date: July 12, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Data preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(reticulate)
+```
+
+Load the data:
+
+```{r}
+data_fox <- readRDS("data/FOX.Rds")
+data_cnn <- readRDS("data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+```
+
+Use a smaller sample:
+
+```{r}
+set.seed(161)
+
+data_news <- slice_sample(data_news, n = 20)
+```
+
+API-Key: 1. part in file + 2. part: **DahpUIy8A**
+
+Store the full key in your local environment and load with `{r}Sys.getenv("openai")`
+
+# Sentence Embeddings and Clustering
+
+We want to cluster our data into groups according to similar topics. To do this, we can calculate the similarity (or distance) of the article headlines. To do this, we need to calculate embeddings of the headings that encapsulate the meaning. You can choose between different providers of embedding models. Choose your provider, a good model and the implementation in Python and/or R.
+
+## Sentence Embeddings
+
+*OpenAI: install (with conda) and import OpenAI python library; set and get OpenAI API key for API call* *Huggingface: install (with conda) and import sentence-transformers python library*
+
+```{r}
+
+```
+
+## Clustering
+
+There are two main families of clustering algorithms: 1. kmeans, where you specify the number of clusters in advance 2. hierarchical clustering, where you set a cut-off value for the maximum distance (or minimum similarity) for clustering
+
+```{r}
+
+```
+
+# Sentiment Analysis and Visualisation
+
+We want to extract the sentiment of the headlines in order to recognize patterns in the reporting. Let's output the sentiment in the three categories Positive, Negative and Neutral. You can choose between different language model providers. Choose your provider, a suitable model and the implementation in Python and/or R.
+
+## Sentiment Analysis
+
+*OpenAI: install (with conda) and import OpenAI python library; set and get OpenAI API key for API call* *Huggingface: use manually installed transformers python library*
+
+```{r}
+
+```
