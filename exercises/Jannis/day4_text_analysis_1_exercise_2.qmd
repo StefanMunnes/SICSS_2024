@@ -1,0 +1,110 @@
+---
+title: "Text Analysis I - Exercise I"
+date: July 11, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+# Preparation
+
+Packages you will (probably) need:
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.sentiment)
+library(seededlda)
+library(quanteda.textmodels)
+library(quanteda.textstats)
+```
+
+Use the script from exercise 1 to get all the necessary objects for the analysis
+
+# Perform a sentiment analysis
+
+Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
+
+```{r}
+data_fox <- readRDS("C:/Users/hertel/data/FOX.Rds")
+data_cnn <- readRDS("C:/Users/hertel/data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+
+corpus <- corpus(data_news, text_field = "body")
+tokens <- tokens(corpus, what = "word")
+dfm <- dfm(tokens)
+
+tokens_pre <- tokens(
+  corpus,
+  what = "word",
+  remove_punct = TRUE,
+  remove_symbols = TRUE,
+  remove_numbers = TRUE,
+  remove_separators = TRUE
+  )|>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = TRUE)
+dfm_pre <- dfm(tokens_pre)
+
+dfm_tfidf <- dfm_tfidf(dfm_pre)
+
+```
+
+# Perform a topic models analysis
+
+Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
+
+```{r}
+dict_pol <- data_dictionary_HuLiu
+dfm_lookup(dfm_pre, dict_pol)
+textstat_polarity(dfm_pre, dict_pol)
+textstat_valence(dfm_pre, data_dictionary_AFINN)
+
+
+```
+
+# **Bonus**: Train your own naive bayes classifier for sentiment
+
+Get a training set from the labeled data and define classes:
+
+```{r}
+
+```
+
+Train the model with the training data and classes:
+
+```{r}
+
+```
+
+Get (unlabelled) test data:
+
+```{r}
+
+```
+
+Predict class for test data with trained model:
+
+```{r}
+
+```
+
+Create a simple confusion matrix to check prediction accuracy:
+
+```{r}
+
+```
