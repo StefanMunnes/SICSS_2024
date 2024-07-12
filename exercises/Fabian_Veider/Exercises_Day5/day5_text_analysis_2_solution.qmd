@@ -1,0 +1,269 @@
+---
+title: "Text Analysis II - Solution"
+date: July 12, 2024
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+
+# Data preparation
+
+Packages you will (probably) need:
+```{r}
+library(dplyr)
+library(reticulate)
+```
+
+Load the data: 
+```{r}
+data_fox <- readRDS("data/FOX.Rds")
+data_cnn <- readRDS("data/CNN.Rds")
+
+data_news <- bind_rows(
+  list("fox" = data_fox, "cnn" = data_cnn),
+  .id = "source"
+)
+```
+
+Use a smaller sample:
+```{r}
+data_news <- data_news[1:20, ]
+```
+
+API-Key: 1. part in file + 2. part: **DahpUIy8A**
+
+Store the full key in your local environment and load with `{r}Sys.getenv("openai")`
+
+
+# Sentence Embeddings and Clustering
+
+We want to cluster our data into groups according to similar topics. To do this, we can calculate the similarity (or distance) of the article headlines. To do this, we need to calculate embeddings of the headings that encapsulate the meaning.
+You can choose between different providers of embedding models. Choose your provider, a good model and the implementation in Python and/or R.
+
+## Sentence Embeddings
+
+### OpenAI
+
+*NOTE: install (with conda) and import OpenAI python library*
+
+*NOTE: set and get OpenAI API key for API call*
+
+```{r}
+openai <- import("openai")
+
+client <- openai$OpenAI(api_key = Sys.getenv("openai"))
+```
+
+Function for API call in **Python**:
+```{python}
+def get_embeddings(text, model="text-embedding-3-small"):
+  return client.embeddings.create(input = [text], model=model).data[0].embedding
+```
+
+Function for API call in **R**:
+```{r}
+get_embeddings <- function(text, model = "text-embedding-3-small") {
+  client$embeddings$create(input = text, model = model)$data[[1]]$embedding
+}
+```
+
+Run API call function and transform list to matrix:
+```{r}
+headlines_embeddings_ls <- lapply(data_news$title, get_embeddings)
+
+headlines_embeddings <- do.call(rbind, headlines_embeddings_ls)
+```
+
+
+### Huggingface
+
+*NOTE: install (with conda) and import sentence-transformers python library*
+
+Workflow in **Python**:
+```{python}
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+
+headlines_embeddings = model.encode(r.data_news["title"])
+```
+
+Workflow in **R**:
+```{r}
+sentence_transformers <- import("sentence_transformers")
+
+model <- sentence_transformers$SentenceTransformer("paraphrase-MiniLM-L6-v2")
+
+headlines_embeddings <- model$encode(data_news$title)
+```
+
+
+## Clustering
+
+There are two main families of clustering algorithms:
+  1. kmeans, where you specify the number of clusters in advance
+  2. hierarchical clustering, where you set a cut-off value for the maximum distance (or minimum similarity) for clustering
+
+### kmeans clustering
+
+```{r}
+cluster_kmeans <- kmeans(headlines_embeddings, 3)
+
+data_news$cluster_kmeans <- cluster_kmeans$cluster
+```
+
+Visually inspect hierarchical clusters:
+```{r}
+factoextra::fviz_cluster(cluster_kmeans,
+  data = headlines_embeddings,
+  geom = "point",
+  ellipse.type = "convex",
+  ggtheme = ggplot2::theme_bw()
+)
+```
+
+### hierarchical clustering
+
+```{r}
+headlines_distance <- proxy::dist(headlines_embeddings, method = "cosine")
+
+hcluster <- hclust(headlines_distance)
+
+data_news$cluster_hier <- cutree(hcluster, h = 0.3)
+```
+
+Visually inspect hierarchical clusters:
+```{r}
+hcluster$labels <- data_news$title
+
+plot(hcluster, hang = -1)
+```
+
+
+
+# Sentiment Analysis and Visualisation
+
+We want to extract the sentiment of the headlines in order to recognize patterns in the reporting. Let's output the sentiment in the three categories Positive, Negative and Neutral. 
+You can choose between different language model providers. Choose your provider, a suitable model and the implementation in Python and/or R.
+
+## Sentiment Analysis
+
+### OpenAI
+
+*NOTE: set and get OpenAI API key for API call*
+
+
+Workflow for **Python**:
+
+*NOTE: install (with conda) and import OpenAI python library*
+
+```{r}
+openai <- import("openai")
+
+client <- openai$OpenAI(api_key = Sys.getenv("openai"))
+```
+
+Function for API call:
+```{python}
+def get_sentiment(message):
+
+    system_msg = "You are a political scientist. Give me the sentiment of the following newspaper articles. I want you to answer just with positive, negative, or neutral."
+
+    # Call the OpenAI API to generate a response
+    response = client.chat.completions.create(
+        model="gpt-4o",  # Use a powerful model for sentiment analysis
+        messages = {"system": system_msg, "user": message},
+        max_tokens=5,  # Limit response to a single word
+        temperature=0.2  # Keep response consistent
+        # response_format={"type": "json_object"}
+    )
+
+    # Extract the sentiment from the response
+    sentiment = response.choices[0].message.content
+
+    return sentiment
+```
+
+
+Workflow in **R**
+
+Using tidychatmodels, setting API key and system message:
+```{r}
+library(tidychatmodels)
+
+chat_model <- create_chat("openai", Sys.getenv("openai")) |>
+  add_model("gpt-4o")
+
+chat_system <- chat_model |>
+  add_params("temperature" = 0.2, "max_tokens" = 5) |>
+  add_message(
+    role = "system",
+    message = "You are a political scientist. Give me the sentiment of the following newspaper articles. I want you to answer just with positive, negative, or neutral."
+  )
+```
+
+Function for API call:
+```{r}
+get_sentiment <- function(txt) {
+  Sys.sleep(2)
+
+  chat_system |>
+    add_message(
+      role = "user",
+      message = txt
+    ) |>
+    perform_chat() |>
+    extract_chat(silent = TRUE) |>
+    filter(.data$role == "assistant") |>
+    pull(message)
+}
+```
+
+Run API call function (Python or R), transform list to vector, and add to data:
+```{r}
+titles_sentiment <- lapply(data_news$title, get_sentiment)
+
+titles_sentiment <- unlist(titles_sentiment)
+
+data_news$sentiment_openai <- titles_sentiment
+```
+
+
+### Huggingface
+
+Workflow in **Python**:
+
+```{python}
+from transformers import pipeline
+
+sentiment_pipeline = pipeline("sentiment-analysis", model="ahmedrachid/FinancialBERT-Sentiment-Analysis")
+
+titles_sentiment_ls = sentiment_pipeline([str(i) for i in r.data_news['title'].tolist()])
+```
+
+Workflow in **R**:
+```{r}
+transformers <- import("transformers")
+
+sentiment_pipeline <- transformers$pipeline("sentiment-analysis", model = "ahmedrachid/FinancialBERT-Sentiment-Analysis")
+
+titles_sentiment_ls <- sentiment_pipeline(data_news$title)
+```
+
+
+Transform response from json to vector and add to data.frame
+```{r}
+# titles_sentiment <- sapply(py$titles_sentiment_ls, function(x) x$label)
+titles_sentiment <- sapply(titles_sentiment_ls, function(x) x$label)
+
+data_news$sentiment_huggingface <- titles_sentiment
+```
