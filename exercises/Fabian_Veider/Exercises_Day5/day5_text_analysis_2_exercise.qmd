@@ -77,13 +77,28 @@ print(r.data_py)
 titles_py = r.data_py['title'].to_list()
 print(titles_py)
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.cluster.hierarchy import linkage, dendrogram
 sentences = titles_py
 
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 embeddings = model.encode(sentences)
+similarities = cosine_similarity(embeddings)
+
+distances = 1 - similarities
+
+linkage_matrix = linkage(distance, method='ward)
+
+# Plot the dendrogram
+plt.figure(figsize=(10,7))
+dendrogram(linkage_matrix, labels=titles_py, leaf_rotation=90, leaf_font_size=12)
+plt.xlabel("Titles")
+plt.ylabel("Distances")
+plt.show()
 #print(len(embeddings[0]))
 #print(embeddings)
 ```
+
 
 ```{r}
 install.packages("Rtsne")
@@ -94,26 +109,25 @@ library(ggplot2)
 
 ```{r}
 # Convert the Python numpy array to an R matrix
-embeddings_matrix <- py_to_r(py$embeddings)
+similarity_matrix <- py_to_r(py$similarities)
 # Set the number of clusters
 k <- 4
 
 # Perform K-means clustering
 set.seed(42)
-kmeans_result <- kmeans(embeddings_matrix, centers = k, nstart = 25)
+kmeans_result <- kmeans(similarity_matrix, centers = k, nstart = 25)
 
 # Get the cluster labels
 labels <- kmeans_result$cluster
 
 # Perform t-SNE
-tsne_result <- Rtsne(embeddings_matrix, dims = 2, perplexity = 3, verbose = TRUE, max_iter = 1000)
+tsne_result <- Rtsne(similarity_matrix, dims = 2, perplexity = 3, verbose = TRUE, max_iter = 500)
 
 # Get the t-SNE coordinates
 embeddings_2d <- tsne_result$Y
 
 # Create a dataframe for ggplot
 plot_data <- data.frame(
-  
   TSNE1 = embeddings_2d[, 1],
   TSNE2 = embeddings_2d[, 2],
   Cluster = as.factor(labels)
