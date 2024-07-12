@@ -256,8 +256,13 @@ decoder -> transform input text to sequence output of text (next token predictio
 * self-supervised learning
 * masked language model, next word prediction
 * pre-training, transfer learning, fine-tuning
-* prompt(engineering), in-context learning
+* [prompt(engineering)](https://learnprompting.org/docs/intro), in-context learning
 * model parameters vs [hyperparameters](https://michaelehab.medium.com/the-secrets-of-large-language-models-parameters-how-they-affect-the-quality-diversity-and-32eb8643e631)
+
+
+---
+
+[Visualize generative AI](https://ig.ft.com/generative-ai/) (by financial time)
 
 
 # Language Models: **Access**
