@@ -1,16 +1,4 @@
-model_nb <- textmodel_nb(dfm_pp_train, sentiment_class_train)
-format: 
-  html:
-    embed-resources: true
-    number-sections: true
-editor: visual
-execute: 
-  eval: false
-  echo: true
-  output: false
-  warning: false
-  error: false
----
+model_nb \<- textmodel_nb(dfm_pp_train, sentiment_class_train) format: html: embed-resources: true number-sections: true editor: visual execute: eval: false echo: true output: false warning: false error: false ---
 
 # Preparation
 
