@@ -17,7 +17,7 @@ Method:
 
 --> input /education inequality/ in each of Fox News's and CNN's article archives
 --> filter for articles only (not videos, etc.)
---> scrape the data 
+--> scrape the data for title, author, date, text body
 
 2. data preprocessing
 3. data analysis
