@@ -113,6 +113,7 @@ scrape_search_results <- function(search_url) {
   search_page <- read_html(search_url)
   
   article_urls <- search_page %>%
+    # TODO: Find string to extract string
     html_nodes(".bvDsJq") %>%
     html_attr("href")# 
     #paste0("", .)
