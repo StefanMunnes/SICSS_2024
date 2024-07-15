@@ -96,3 +96,76 @@ writeLines(urls, "projects/education_project/cnnurls.txt")
 
 # close server
 remote_driver$server$stop()
+
+#scraping urls finished
+
+
+
+
+#scraping articles
+
+#import the cnnurls data
+cnn_urls <- read.delim("projects/education_project/cnnurls.txt")
+articles <- setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("title", "author", "date", "body"))
+
+x <- 1
+
+
+while (x<805){
+  Sys.sleep(3)
+  article_url <- read_html(cnn_urls[x,1])
+  
+  title <- article_url %>%
+    html_node("#maincontent") %>%
+    html_text()
+  
+  author <- article_url %>%
+    html_node(".byline__names")%>%
+    html_text()
+  
+  date <- article_url%>%
+    html_node(".timestamp.vossi-timestamp-primary-core-light")%>%
+    html_text()
+  
+  body <- article_url %>%
+    html_nodes(".vossi-paragraph-primary-core-light") %>%
+    html_text() %>%
+    paste(collapse = "")
+  
+  articles[x, ] <- c(title, author, date, body)
+  
+  print(paste("Scraped", x, "articles"))
+  
+  x <- x+1
+}
+
+#create reserve articles df
+articles_reserve <- articles
+
+#scrape missing article 602
+article_url <- read_html("https://edition.cnn.com/2020/09/02/us/schools-coronavirus-six-months-in-wellness/index.html")
+title <- article_url %>%
+  html_node(".pg-headline") %>%
+  html_text()
+
+author <- article_url %>%
+  html_node(".metadata__byline__author")%>%
+  html_text()
+
+date <- article_url%>%
+  html_node(".update-time")%>%
+  html_text()
+
+body <- article_url %>%
+  html_nodes(".zn-body__paragraph") %>%
+  html_text() %>%
+  paste(collapse = "")
+
+articles[601, ] <- c(title, author, date, body)
+
+
+combined_edineq_df <- cbind(articles, cnn_urls)
+
+#save the df
+write_csv(combined_edineq_df, "projects/education_project/cnn_edineq_df.csv")
+write.xlsx(combined_edineq_df, "projects/education_project/cnn_edineq_df.xlsx")
