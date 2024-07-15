@@ -1,0 +1,240 @@
+---
+title: "Project Activism Framing GB"
+date: July 15, 2024
+format: 
+  html:
+    embed-resources: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Data acquisition
+
+```{r}
+# .iIDZOJ div:nth-child(1) div .lncuML .fWWpXO
+# .iIDZOJ div:nth-child(2) .gEsnbu .fWWpXO
+# div:nth-child(3) .fWWpXO
+
+# Page 1: https://www.bbc.com/search?q=%22just%20stop%20oil%22&edgeauth=eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJrZXkiOiAiZmFzdGx5LXVyaS10b2tlbi0xIiwiZXhwIjogMTcyMTAzMzE1NiwibmJmIjogMTcyMTAzMjc5NiwicmVxdWVzdHVyaSI6ICIlMkZzZWFyY2glM0ZxJTNEJTI1MjJqdXN0JTI1MjBzdG9wJTI1MjBvaWwlMjUyMiJ9.RI5avJJIPpCsNGTROTs5vrPz6Su6HOpcIga8_CW8zNk
+
+# Page 2: https://www.bbc.com/search?q=%22just%20stop%20oil%22&edgeauth=eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJrZXkiOiAiZmFzdGx5LXVyaS10b2tlbi0xIiwiZXhwIjogMTcyMTAzMzE1NiwibmJmIjogMTcyMTAzMjc5NiwicmVxdWVzdHVyaSI6ICIlMkZzZWFyY2glM0ZxJTNEJTI1MjJqdXN0JTI1MjBzdG9wJTI1MjBvaWwlMjUyMiJ9.RI5avJJIPpCsNGTROTs5vrPz6Su6HOpcIga8_CW8zNk
+
+# Individual urls 
+# https://www.bbc.com/news/articles/crge8vjg8y3o
+# https://www.bbc.com/news/articles/c1we0pzw8pwo
+```
+
+---
+title: "Web Scraping Exercise"
+date: July 9, 2024
+format: 
+  html:
+    embed-resources: true
+editor: visual
+execute: 
+  eval: false
+  echo: true
+  output: false
+  warning: false
+  error: false
+---
+
+## Packages
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(stringi)
+library(RSelenium)
+#library(stringr)
+```
+
+```{r}
+# Test one article of bbc
+read_html
+```
+
+## Scraping
+
+```{r}
+scrape_article <- function(url) {
+  article_page <- read_html(url)
+  
+  title <- article_page %>%
+    #html_node("h1.headline") %>%
+    html_node(".bWszMR") %>%
+    html_text(trim = TRUE)
+  
+  author <- article_page %>%
+    html_node(".hhBctz") %>%
+    html_text(trim = TRUE)
+    
+  date <- article_page %>%
+    html_node(".WPunI") %>%
+    #html_attr("datetime")
+    html_text(trim = TRUE)
+  
+  body <- article_page %>%
+    html_nodes(".fYAfXe") %>%
+    html_text(trim = TRUE) %>%
+    paste(collapse = " ")
+  
+  tibble(
+    title = title,
+    author = author,
+    date = date,
+    body = body,
+    url = url
+  )
+}
+
+test_article <- scrape_article("https://www.bbc.com/news/articles/crge8vjg8y3o")
+# Try individual article
+# Title
+# .bWszMR
+# Author
+# .hhBctz
+# Time
+# .WPunI
+# Body
+# .fYAfXe
+
+# Function to extract article URLs from a search results page
+scrape_search_results <- function(search_url) {
+  search_page <- read_html(search_url)
+  
+  article_urls <- search_page %>%
+    html_nodes(".bvDsJq") %>%
+    html_attr("href")# 
+    #paste0("", .)
+  
+  return(unique(article_urls))
+}
+# sc-2e6baa30-0 gILusN
+# Test one page
+# https://www.bbc.com/search?q=%22just%20stop%20oil%22
+
+test_page <- scrape_search_results("https://www.bbc.com/search?q=%22just%20stop%20oil%22")
+search_page <- read_html("https://www.bbc.com/search?q=%22just%20stop%20oil%22")
+# .bvDsJq
+titles_test <- search_page %>% html_nodes(".bvDsJq")
+titles_url_test <- titles_test %>% html_attr("href")
+# Convert the vector to a dataframe
+df <- data.frame(values = test_page)
+```
+
+```{r}
+# List to store all articles
+all_articles <- list()
+search_url <- "https://www.bbc.com/search?q=%22just%20stop%20oil%22"
+# Loop through the first 5 pages of search results
+repeat {
+  #print("Going to next page")
+  
+  # Get article URLs from the search results page
+  article_urls <- scrape_search_results(search_url)
+  
+  # Loop through each article URL and scrape the details
+  for (url in article_urls) {
+    # Skip subscriber articles
+    #if (grepl("subscriber/article", url) || grepl("swampland.time", url)) {
+    #  print(paste("Skipping article:", url))
+    #  next
+    #}
+    print(paste("Scraping article:", url))
+    article_details <- scrape_article(url)
+    all_articles <- append(all_articles, list(article_details))
+    Sys.sleep(1)
+  }
+  Sys.sleep(1)
+  break
+  # Check if max date is reached
+  # Move to next page
+}
+
+# Combine all articles into a single tibble
+combined_articles <- bind_rows(all_articles)
+```
+
+```{r}
+# Start RSelenium
+driver <- rsDriver(browser = "chrome")
+remote_driver <- driver[["client"]]
+
+# Navigate to the page
+remote_driver$navigate("https://juststopoil.org/news-press/")
+
+# Function to click the "Load more" button
+click_load_more <- function() {
+  # Find and click the "Load more" button
+  #load_more_button <- remote_driver$findElement(using = "css", value = ".elementor-posts-container .elementor-widget-container:last-child button")
+  load_more_button <- remote_driver$findElement(using = "css", value = ".elementor-button")
+  load_more_button$clickElement()
+}
+#.elementor-button-text
+# Function to scrape articles
+scrape_articles <- function() {
+  # Scrape articles until a certain date (e.g., "January 1, 2023")
+  target_date <- "June 15, 2024"
+  
+  articles <- list()
+  
+  repeat {
+    # Scrape articles on the current page
+    page_source <- remote_driver$getPageSource()[[1]]
+    print("Page source")
+    print(page_source)
+    page <- read_html(page_source)
+    
+    # Extract article details
+    #article_elements <- html_nodes(page, ".elementor-posts-container .elementor-widget-container .elementor-post")
+    article_elements <- html_nodes(page, ".elementor-posts-container .elementor-widget-container .elementor-post")
+    # Title: .entry-title,.elementor-post__title a
+    # Body: .clear 
+    # Author: Not existent
+    # Date: .published
+    #
+    for (article in article_elements) {
+      article_date <- html_text(html_node(article, ".elementor-post-date"))
+      
+      # Check if article date is before the target date
+      if (as.Date(article_date, format = "%B %d, %Y") < as.Date(target_date, format = "%B %d, %Y")) {
+        # Stop scraping if we've reached the target date
+        return(articles)
+      }
+      
+      # Extract article title and link
+      article_title <- html_text(html_node(article, ".entry-title"))
+      article_link <- html_attr(html_node(article, ".elementor-post__title a"), "href")
+      
+      # Store article details in a list
+      articles[[length(articles) + 1]] <- list(title = article_title, link = article_link)
+    }
+    
+    # Click "Load more" button to fetch more articles
+    click_load_more()
+  }
+}
+
+# Run scraping function
+articles <- scrape_articles()
+
+# Print the scraped articles
+print(articles)
+
+# Close the browser
+remote_driver$close()
+
+# Stop the Selenium server
+driver$server$stop()
+
+```
