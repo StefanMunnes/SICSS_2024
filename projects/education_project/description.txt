@@ -14,6 +14,11 @@ df: title, text, published date
 
 Method:
 1. web scraping 
+
+--> input /education inequality/ in each of Fox News's and CNN's article archives
+--> filter for articles only (not videos, etc.)
+--> scrape the data for title, author, date, text body
+
 2. data preprocessing
 3. data analysis
 topic clustering: unsupervised learning: tf/idf, LDA
