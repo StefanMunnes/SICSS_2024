@@ -1,6 +1,4 @@
----
-title: "Text Analysis I - Exercise I"
-date: July 11, 2024
+model_nb <- textmodel_nb(dfm_pp_train, sentiment_class_train)
 format: 
   html:
     embed-resources: true
@@ -78,7 +76,7 @@ sentiment_class_train <- sentiment_class[1:700]
 Train the model with the training data and classes:
 
 ```{r}
-model_nb <- textmodel_nb(dfm_pp_train, sentiment_class)
+model_nb <- textmodel_nb(dfm_pp_train, sentiment_class_train)
 ```
 
 Get (unlabelled) test data:
