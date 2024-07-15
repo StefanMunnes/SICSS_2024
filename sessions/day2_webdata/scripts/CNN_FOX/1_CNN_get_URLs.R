@@ -22,7 +22,7 @@ remDr$navigate("https://edition.cnn.com/")
 Sys.sleep(10)
 
 # Reject cookies - Not required in the US
-#remDr$findElement(using = "xpath", "//button[@id='onetrust-reject-all-handler']")$clickElement() 
+remDr$findElement(using = "xpath", "//button[@id='onetrust-reject-all-handler']")$clickElement() 
 
 # Click search button
 remDr$findElement(using = "xpath", "//button[@id='headerSearchIcon']")$clickElement() 

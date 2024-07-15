@@ -82,7 +82,7 @@ while (date_index <= index_end) {
   end_month <- formatC(month(end_date), width=2, format="d", flag="0")
   end_year <- year(end_date)
   
-  # Scroll top of page
+  # Scroll to top of page so that I have the entry field in the window
   remDr$executeScript("window.scrollTo(0, 0)")
   Sys.sleep(.3)
   
