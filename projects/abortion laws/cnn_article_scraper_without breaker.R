@@ -7,11 +7,6 @@ head(urls)
 
 url <- urls$x[[1]]
 
-
-
-
-
-
 # Loop --------------------------------------------------------------------
 # Split the task, otherwise memory overload
 # Issue: no end condition, loop will run into NA and break
@@ -27,11 +22,6 @@ for (batch in seq_along(url_groups)) {
   
   for (url in url_groups[[batch]]) {
 
-    if(row_now >=row_max){
-      cat("max article limit reached \n")
-      break
-    }
-    
     Sys.sleep(runif(1)+1)
     
     print(paste(batch, url))
@@ -68,12 +58,6 @@ for (batch in seq_along(url_groups)) {
     articles <- rbind(articles, tmp)
     saveRDS(articles, file = paste0("CNN", batch, ".Rds"))
    
-    row_now <- row_now + nrow(tmp)  # editing counter to new row number
-    
-  }
-  }
-  if (row_now >= row_max) {
-    break
   }
   }
 }
