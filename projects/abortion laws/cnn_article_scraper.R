@@ -8,16 +8,18 @@ head(urls)
 url <- urls$x[[1]]
 
 
-
-
-
-
 # Loop --------------------------------------------------------------------
 # Split the task, otherwise memory overload
 # Issue: no end condition, loop will run into NA and break
 
 # split urls list into smaller chunks, otherwise memory will run full and R will crash
 url_groups <- split(urls$x, ceiling(seq_along(urls$x) / 300))
+
+
+# cap number of articles 
+row_max <- 20
+row_now = 0
+
 
 # loop over each batch, save data set immediately and delete data from previous
 # batch to prevent R from crashing
@@ -74,7 +76,6 @@ for (batch in seq_along(url_groups)) {
   }
   if (row_now >= row_max) {
     break
-  }
   }
 }
 
