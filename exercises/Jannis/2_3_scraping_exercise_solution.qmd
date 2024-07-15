@@ -75,7 +75,7 @@ body <- website %>%
 ```{r}
 # Write scraping function that iterates through page numbers by inserting them into the URL
 get_urls <- function(page) {
-  website <- read_html(paste0("https://time.com/search/?q=climate%20change&page=", page))
+  website <- read_html(paste0("https://time.com/search/?q=climate%20chang&page=", page))
 
   urls <- website %>%
     html_nodes(".media-heading a") %>%
