@@ -19,21 +19,6 @@ Quarto enables you to weave together content and executable code into a finished
 
 ## Data acquisition
 
----
-title: "Web Scraping Exercise"
-date: July 9, 2024
-format: 
-  html:
-    embed-resources: true
-editor: visual
-execute: 
-  eval: false
-  echo: true
-  output: false
-  warning: false
-  error: false
----
-
 ## Packages
 
 ```{r}
@@ -41,7 +26,6 @@ library(tidyverse)
 library(rvest)
 library(stringi)
 library(RSelenium)
-#library(stringr)
 ```
 
 ## Scraping
@@ -66,9 +50,13 @@ scrape_article <- function(url) {
     html_text(trim = TRUE)
   # Format date_str into appropriate form
   if (grepl("days ago", date_string) || grepl("day ago", date_string)) {
-    # Handle relative date like "5 days ago"
-    days_ago <- as.numeric(gsub("\\D", "", date_string))  # Extract number of days
+    # Handle relative date like "1 day ago", "2 days ago"...
+    days_ago <- as.numeric(gsub("\\D", "", date_string))  
     date <- Sys.Date() - days_ago  # Calculate the date
+  } else if (grepl("hours ago", date_string) || grepl("hour ago", date_string)) {
+    # Handle relative date like "1 hour ago", "2 hours ago"...
+    hours_ago <- as.numeric(gsub("\\D", "", date_string))
+    date <- Sys.time() - hours(1) * hours_ago 
   } else {
     # Handle date string like "25 June 2024"
     date <- dmy(date_string)  # Convert to Date object using lubridate
@@ -103,6 +91,7 @@ scrape_search_results <- function(search_url) {
   return(article_urls)
 }
 
+# Test for first page
 test_page <- scrape_search_results("https://www.bbc.com/search?q=%22just%20stop%20oil%22")
 for (url in test_page){
   print(url)
@@ -121,11 +110,6 @@ repeat {
   
   # Loop through each article URL and scrape the details
   for (url in article_urls) {
-    # Skip subscriber articles
-    #if (grepl("subscriber/article", url) || grepl("swampland.time", url)) {
-    #  print(paste("Skipping article:", url))
-    #  next
-    #}
     print(paste("Scraping article:", url))
     article_details <- scrape_article(url)
     all_articles <- append(all_articles, list(article_details))
@@ -143,7 +127,7 @@ combined_articles <- bind_rows(all_articles)
 
 ```{r}
 # Start RSelenium
-rD <- rsDriver(browser = "chrome", port = 4445L, verbose = FALSE)
+rD <- rsDriver(browser = "chrome", port = 4444L, verbose = FALSE)
 remDr <- rD$client
 
 # Specify the search URL
@@ -154,17 +138,48 @@ remDr$navigate(search_url)
 
 # Initialize list to store all articles
 all_articles <- list()
-max_date <- as.Date("2023-01-01")  # Specify the maximum date to stop scraping
 
-repeat {
+# Specify the maximum date to stop scraping
+max_date <- as.Date("2024-01-01") 
+
+
+##### Testing area #####
+#ps_test <- remDr$getPageSource()[[1]]
+#sp_test <- read_html(ps_test)
+
+#article_urls <- sp_test %>%
+#  html_nodes("a[href*='/news/articles/']") %>%
+#  html_attr("href")
+
+# Base URL
+#base_url <- "https://www.bbc.com"
+
+# Generate full URLs
+#full_urls <- paste0(base_url, article_urls)
+
+#for (url in full_urls) {
+#  print(url)
+#}
+
+########################
+base_url <- "https://www.bbc.com"
+
+# Loop to navigate through search result pages
+while (TRUE) {
   # Get the page source and parse it
-  search_page <- remDr$getPageSource()[[1]] %>% read_html()
+  page_source <- remDr$getPageSource()[[1]]
+  search_page <- read_html(page_source)
   
-  # Get article URLs from the search results page
-  article_urls <- scrape_search_results(search_page)
+  # Get article URLs from the search page
+  article_urls <- search_page %>%
+    html_nodes("a[href*='/news/articles/']") %>%
+    html_attr("href")
+
+  # Generate full URLs
+  full_urls <- paste0(base_url, article_urls)
   
   # Loop through each article URL and scrape the details
-  for (url in article_urls) {
+  for (url in full_urls) {
     print(paste("Scraping article:", url))
     article_details <- scrape_article(url)
     all_articles <- append(all_articles, list(article_details))
@@ -172,8 +187,16 @@ repeat {
   }
   
   # Check the date of the last scraped article
-  last_article_date <- as.Date(max(sapply(all_articles, function(x) x$date), na.rm = TRUE))
+  last_article_date <- min(as.Date(sapply(all_articles, function(x) x$date), na.rm = TRUE))
+  
+  # Check if last_article_date is NA or NULL
+  if (is.na(last_article_date) || is.null(last_article_date)) {
+    print("Error: Unable to determine last article date.")
+    break
+  }
+  
   if (last_article_date < max_date) {
+    print("Oldest date reached. Terminating scraping.")
     break
   }
   
@@ -183,8 +206,10 @@ repeat {
   }, error = function(e) NULL)
   
   if (is.null(next_button)) {
+    print("Could not find next button. Exiting loop.")
     break  # Exit loop if there is no "Next" button
   } else {
+    print("Next page")
     next_button$clickElement()
     Sys.sleep(2)  # Wait for the next page to load
   }
@@ -196,6 +221,5 @@ rD$server$stop()
 
 # Combine all articles into a single tibble
 combined_articles <- bind_rows(all_articles)
-print(combined_articles)
 
 ```
