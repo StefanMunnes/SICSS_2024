@@ -1,0 +1,1 @@
+data <- readRDS("path/to/data.rds")
