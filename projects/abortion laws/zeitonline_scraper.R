@@ -3,7 +3,7 @@
 
 # Gender Inequality in Media Representations of Abortions 
 # -> How do women and men write about and discuss abortions? 
-# Scrape Zeit online's articles on "abtreibung"
+# Scrape Zeit online's articles on "abtreibung" (zeit.de -> Suche -> "abtreibung")
 
 
 library(tidyverse)
@@ -12,18 +12,18 @@ library(stringr)
 
 
 # 1.  urls 
-url_base <- "https://www.zeit.de/suche/index?q=abtreibung&p="
+url_base <- "https://www.zeit.de/suche/index?q=abtreibung&type=article&p="
 
 url_all <- c()
 
-# 316 pages
-for (i in 1:316) {
+# 314 pages
+for (i in 1:314) {
   print(i)
   url_all <- append(url_all, paste0(url_base, as.character(i)))
 }
 
 
-paste0(url_base, 1:316)
+paste0(url_base, 1:314)
 
 url_list <- url_all
 
@@ -59,10 +59,7 @@ get_all_articles <- function(url) {
       html_text() |>
       paste(collapse = ";"),
     
-    author = website |>
-      html_nodes(".byline") |>
-      html_text() |>
-      paste(collapse = ";"),
+    author <- html_text(html_nodes(website, 'div.byline span[itemprop="name"]')),
     
     source = website |>
       html_nodes(".metadata__source") |>
