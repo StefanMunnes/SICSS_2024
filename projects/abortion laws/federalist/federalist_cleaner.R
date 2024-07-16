@@ -1,4 +1,5 @@
 library(dplyr)
+library(gender)
 
 #Delete accidentally captured text
 federalist1 <- federalist %>%
@@ -20,6 +21,12 @@ regex <- "^(([:alpha:]\\.)?([:alpha:]\\.)?([:alpha:]\\.)?\\s*[:alpha:]+(\\s[:alp
 federalist3 <- federalist2 %>%
   mutate_at(vars(starts_with("author")), ~ str_replace(.,  regex , "\\6, \\1"))
 
-#for people who only use first initials, this didn't reaarrange them, but oh well
+federalist3 <- federalist3 %>%
+  separate_wider_delim(author1,",",names = c("Last_Name","Name"),too_few = "align_start")
 
-
+Federalist_FN <- tibble(federalist3$Name) %>%
+  distinct()%>%
+  na.omit()%>%
+  unlist()
+  
+Federalist_gen <- gender(Federalist_FN,years=2012, method="ssa")
