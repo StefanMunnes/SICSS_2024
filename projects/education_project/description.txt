@@ -20,6 +20,17 @@ Method:
 --> scrape the data for title, author, date, text body
 
 2. data preprocessing
+
+-author: remove "analyzed" "by"- rank of authors
+-timestamp: weekdays, dates(dmy)
+-count the number of articles by year
+-title: remove space, lowercase
+-body: remove space, lowercase
+
+
+
+
+
 3. data analysis
 topic clustering: unsupervised learning: tf/idf, LDA
 word embeddings
