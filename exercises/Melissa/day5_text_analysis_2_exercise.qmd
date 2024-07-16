@@ -75,6 +75,9 @@ embedd_ls <- lapply(data_news$title, get_embeddings)
 embedd <- do.call(rbind, embedd_ls)
 
 lsa::cosine(t(embedd))
+
+sim_mat <- 1-lsa::cosine(embedd)
+
 ```
 
 ## Clustering
@@ -82,6 +85,10 @@ lsa::cosine(t(embedd))
 There are two main families of clustering algorithms: 1. kmeans, where you specify the number of clusters in advance 2. hierarchical clustering, where you set a cut-off value for the maximum distance (or minimum similarity) for clustering
 
 ```{r}
+dist_matrix <- dist(lsa::cosine(t(embedd)))
+hclust_result <- hclust(dist_matrix, method = "complete")
+plot(hclust_result)
+
 
 ```
 
