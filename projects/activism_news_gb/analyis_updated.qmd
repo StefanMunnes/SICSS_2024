@@ -12,12 +12,13 @@ Quarto enables you to weave together content and executable code into a finished
 
 ```{r}
 # Import the CSV file
-df_just_stop_oil <- read_csv("exercises/Ilaria_new/dataframe_just_stop_oil.csv")
+df_just_stop_oil <- read_csv("dataframe_just_stop_oil.csv")
 ```
 
 ## Import libraries
 
 ```{r}
+install.packages("textdata")
 library(dplyr)
 library(quanteda)
 library(quanteda.textstats)
@@ -31,13 +32,13 @@ library(quanteda.sentiment)
 
 ```{r}
 #### for body ####
-corpus <- corpus(df_just_stop_oil, text_field = "body") 
-tokens <- tokens(corpus, what = "word")
-dfm <- dfm(tokens)
+corpus_jso <- corpus(df_just_stop_oil, text_field = "body") 
+tokens_jso <- tokens(corpus, what = "word")
+dfm_jso <- dfm(tokens_jso)
 
 # pre-processing tokens
-tokens_pp <- tokens(
-    corpus,
+jso_tokens_pp <- tokens(
+    corpus_jso,
     what = "word",
     remove_punct = TRUE,
     remove_symbols = TRUE,
@@ -49,19 +50,16 @@ tokens_pp <- tokens(
   tokens_remove(stopwords("en"), padding = FALSE)
 
 # dfm of pp tokens 
-dfmPP <- dfm(tokens_pp)
+jso_dfmPP <- dfm(jso_tokens_pp)
 
 # top 10 dfm features
-top10 <- topfeatures(dfmPP)
+jso_top10 <- topfeatures(jso_dfmPP)
 
 # n_grams with just + 2 words
-kwic(tokens_pp, "oil", window = 3)
+kwic(jso_tokens_pp, "oil", window = 3)
 
 # collocations with 3 words
-eeee <- textstat_collocations(tokens_pp, size = 3, )
-
-
-
+jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
 ```
 
 Sentiment analysis
@@ -71,4 +69,33 @@ dict_pol <- data_dictionary_HuLiu
 sentiment <- dfm_lookup(dfmPP, dict_pol)
 textstat_polarity(dfmPP, dict_pol)
 textstat_valence(dfmPP, data_dictionary_AFINN)
+```
+
+```{r}
+# Assuming `jso_tokens_pp` is your preprocessed tokens
+df_jso <- dfm(jso_tokens_pp) %>% convert(to = "data.frame")
+
+dfm_matrix <- dfm(jso_tokens_pp)
+
+# Convert the dfm to a tidy format
+tidy_df <- tidy(dfm_matrix)
+
+# Get different lexica
+sentiment_lexicon <- get_sentiments("bing")
+
+# Join with the tokenized words and calculate sentiment scores
+sentiment_df <- tidy_df %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+```
+
+```{r}
+# Plot histogram of sentiment scores
+ggplot(sentiment_df, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
 ```
