@@ -10,7 +10,7 @@ get_urls <- function(page) {
     html_nodes(".media-heading a") %>%
     html_attr("href")
   
-  Sys.sleep(20)
+  Sys.sleep(5)
   return(urls)
 }
 

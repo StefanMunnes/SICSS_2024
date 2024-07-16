@@ -17,7 +17,7 @@ url_groups <- split(urls$x, ceiling(seq_along(urls$x) / 300))
 
 
 # cap number of articles 
-row_max <- 200
+row_max <- 2000
 row_now = 0
 
 
