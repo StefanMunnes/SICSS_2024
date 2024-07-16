@@ -6,15 +6,13 @@ library(binman)
 
 selenium()
 
+Sys.sleep(10)
+
 selenium_object <- selenium(retcommand = TRUE,
                             check = FALSE)
 
 binman::list_versions("chromedriver")
 
-
-
-# Task 1 ------------------------------------------------------------------
-# Use RSelenium to collect the URLs of 200 articles mentioning “Climate Change”
 # Start a remote driver
 remote_driver <- rsDriver(browser = "chrome", 
                           chromever = "126.0.6478.126",
@@ -63,7 +61,7 @@ while (TRUE) {
   # Add new URLs to list of all URLs, ensure they are not already present
   urls <- c(urls, new_urls[!new_urls %in% urls])
   
-  # Stop at 400 URLs
+  # Stop at 2000 URLs
   if (length(urls) > 1000) {
     print("Limit of 1000 URLs reached")
     break
@@ -102,4 +100,5 @@ write.csv(urls, "~/SICSS_2024/projects/abortion laws/cnn_urls.csv")
 
 # close server
 remote_driver$server$stop()
+
 
