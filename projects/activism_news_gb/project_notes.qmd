@@ -53,7 +53,7 @@ scrape_article <- function(url) {
     # Handle relative date like "1 day ago", "2 days ago"...
     days_ago <- as.numeric(gsub("\\D", "", date_string))  
     date <- Sys.Date() - days_ago  # Calculate the date
-  } else if (grepl("hours ago", date_string) || grepl("hour ago", date_string)) {
+  } else if (grepl("hrs ago", date_string) || grepl("hr ago", date_string)) {
     # Handle relative date like "1 hour ago", "2 hours ago"...
     hours_ago <- as.numeric(gsub("\\D", "", date_string))
     date <- Sys.time() - hours(1) * hours_ago 
