@@ -1,0 +1,27 @@
+---
+title: "analysis"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Import dataframes
+
+```{r}
+# Import the CSV file
+df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+```
+
+## Import libraries
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+```
+
+## Bag-of-words
