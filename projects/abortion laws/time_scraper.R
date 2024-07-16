@@ -1,28 +1,28 @@
 library(tidyverse)
 library(rvest)
-library(stringr)
+library(stringi)
 
 
-get_urls_scraped <- function(seite) {
-  website_search <- read_html(paste0("https://time.com/search/?q=abortion&page=", seite))
+get_urls <- function(page) {
+  website_search <- read_html(paste0("https://time.com/search/?q=abortion&page=", page))
   
-  urls_scraped <- website_search %>%
+  urls <- website_search %>%
     html_nodes(".media-heading a") %>%
     html_attr("href")
   
-  return(urls_scraped)
-  
-  Sys.sleep(2)
+  Sys.sleep(20)
+  return(urls)
 }
 
-all_urls <- lapply(1:11, get_urls_scraped) %>%
+all_urls <- lapply(1:11, get_urls) %>%
   unlist()
 
 
 get_all_articles <- function(url) {
   print(paste(url, all_urls[[url]]))
   website <- read_html(all_urls[[url]])
-  article <- tibble(
+ 
+   article <- tibble(
     title = website %>%
       html_node("#article-header .self-baseline, .longform-headline") %>%
       html_text(),
