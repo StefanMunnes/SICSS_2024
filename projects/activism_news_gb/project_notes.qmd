@@ -28,7 +28,7 @@ library(stringi)
 library(RSelenium)
 ```
 
-## Scraping
+## Scraping BBC
 
 ```{r}
 scrape_article <- function(url) {
@@ -96,6 +96,39 @@ test_page <- scrape_search_results("https://www.bbc.com/search?q=%22just%20stop%
 for (url in test_page){
   print(url)
 }
+```
+
+## Scraping Just Stop Oil
+
+```{r}
+scrape_article_jso <- function(url) {
+  article_page <- read_html(url)
+  
+  title <- article_page %>%
+    html_node(".entry-title") %>%
+    html_text(trim = TRUE)
+  
+  # No author in Just Stop Oil
+    
+  date <- article_page %>%
+    html_node("time") %>%
+    html_attr("datetime")
+  
+  body <- article_page %>%
+    html_nodes("p") %>%
+    html_text(trim = TRUE) %>%
+    paste(collapse = " ")
+  
+  tibble(
+    title = title,
+    date = date,
+    body = body,
+    url = url
+  )
+}
+# Testing JSO scraping
+test_url <- "https://juststopoil.org/2024/07/11/5-just-stop-oil-supporters-found-guilty-as-un-slams-trial/"
+output_test <- scrape_article_jso(test_url)
 ```
 
 ```{r}
