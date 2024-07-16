@@ -277,12 +277,21 @@ saveRDS(articles, file = paste0("FOX", ".Rds"))
 FOX <- rbind(readRDS("FOX.Rds"))
 
 # remove duplicates
-
 FOX <- articles |> group_by(title, authors) |> slice(1)
 
 # check if length is realistic
 FOX <- FOX %>%
   mutate(article_length = str_length(body))
+
+FOX|> 
+  ungroup()|>
+    summarise(
+        n=n(),
+        mean = mean(article_length),
+        sd = sd(article_length),
+        min = min(article_length),
+        max = max(article_length)
+    )
 
 # save as one file
 saveRDS(FOX, file = "FOX.Rds")
