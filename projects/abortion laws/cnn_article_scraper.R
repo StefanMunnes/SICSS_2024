@@ -72,6 +72,9 @@ for (batch in seq_along(url_groups)) {
    
     row_now <- row_now + nrow(tmp)  # editing counter to new row number
     
+    print(paste0(row_now, " articles saved"))
+
+    
   }
   }
   if (row_now >= row_max) {
