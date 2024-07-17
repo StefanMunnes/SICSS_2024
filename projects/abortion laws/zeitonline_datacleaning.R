@@ -24,10 +24,25 @@ zeit_clean <- data |>
          title = str_to_lower(str_squish(title))) 
 
 View(zeit_clean)
-zeit_clean
 
 
-# 1. cleaning of "author"
+# clean "body" variable 
+
+zeit_clean$body_clean <- zeit_clean$body %>%
+  # Replace German Umlaute and ß
+  str_replace_all("ä", "ae") %>%
+  str_replace_all("ö", "oe") %>%
+  str_replace_all("ü", "ue") %>%
+  str_replace_all("ß", "ss") %>%
+  # Remove text within curly brackets {} and angle brackets <>
+  str_replace_all("\\{.*?\\}", "") %>%
+  str_replace_all("<.*?>", "") %>%
+  # Remove curly brackets {} and angle brackets <>
+  str_replace_all("[{}<>]", "")
+
+
+
+# cleaning of "author"
 # Remove titles from the author column
 zeit_clean$author_clean <- str_replace_all(zeit_clean$author, "\\b(Dr\\. dr\\. dr med\\. med\\.|Dr\\.|Prof\\.)\\s*", "")
 
@@ -77,17 +92,10 @@ valid_indices <- !is.na(zeit_clean$firstname1)
 # Use gender() function to determine genders
 results <- gender(zeit_clean$firstname1[valid_indices], method = "ssa")
 
-# Merge predicted gender back into zeit_clean data frame
-#zeit_clean$predicted_gender <- NA
-#zeit_clean$predicted_gender[valid_indices] <- results$gender
-
 # save results
 results <- as.data.frame(results)
 
-# get rid of duplicates
-
-# Use distinct() to remove duplicates based on the 'name' column
-# and keep name and gender
+# getting rid of duplicates, keeping name and gender
 
 results_unique <- results |> 
   distinct(name, .keep_all = TRUE) |>
@@ -101,6 +109,9 @@ merged_df <- zeit_clean |>
   left_join(results_unique, by = c("firstname1" = "name"))
 
 merged_df
+
+# save as csv
+write_csv(merged_df, "~/SICSS_2024/projects/abortion laws/zeit_abortion_merged.csv")
 
 
 

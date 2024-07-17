@@ -25,8 +25,20 @@ library(quanteda.sentiment)
 ## Import dataframes
 
 ```{r}
-# Import the CSV file
+# Import the CSV files
 df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+df_bbc <- read.csv("pp_bbc_df.csv")
+
+# Brief statistics bbc
+# Assuming your dataframe is named df
+df_bbc %>%
+  count(just_stop_oil)
+
+# Create a dataframe with rows where just_stop_oil is 1
+df_bbc_jso <- subset(df_bbc, just_stop_oil == 1)
+
+# Create a dataframe with rows where just_stop_oil is 0
+df_bbc_bench <- subset(df_bbc, just_stop_oil == 0)
 ```
 
 ## Bag-of-words
@@ -37,6 +49,17 @@ corpus_jso <- corpus(df_just_stop_oil, text_field = "body")
 tokens_jso <- tokens(corpus_jso, what = "word")
 dfm_jso <- dfm(tokens_jso)
 
+corpus_bbc_jso <- corpus(df_bbc_jso, text_field = "body") 
+tokens_bbc_jso <- tokens(corpus_bbc_jso, what = "word")
+dfm_bbc_jso <- dfm(tokens_bbc_jso)
+
+corpus_bbc_bench <- corpus(df_bbc_bench, text_field = "body") 
+tokens_bbc_bench <- tokens(corpus_bbc_bench, what = "word")
+dfm_bbc_bench <- dfm(tokens_bbc_bench)
+
+corpus_bbc <- corpus(df_bbc, text_field = "body") 
+tokens_bbc <- tokens(corpus_bbc, what = "word")
+dfm_bbc <- dfm(tokens_bbc)
 # pre-processing tokens
 jso_tokens_pp <- tokens(
     corpus_jso,
@@ -50,41 +73,110 @@ jso_tokens_pp <- tokens(
   tokens_wordstem(language = "en") |>
   tokens_remove(stopwords("en"), padding = FALSE)
 
+bbc_tokens_pp <- tokens(
+    corpus_bbc,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+bbc_jso_tokens_pp <- tokens(
+    corpus_bbc_jso,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+bbc_bench_tokens_pp <- tokens(
+    corpus_bbc_bench,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
 # dfm of pp tokens 
 jso_dfmPP <- dfm(jso_tokens_pp)
-
+bbc_dfmPP <- dfm(bbc_tokens_pp)
+bbc_jso_dfmPP <- dfm(bbc_jso_tokens_pp)
+bbc_bench_dfmPP <- dfm(bbc_bench_tokens_pp)
 # top 10 dfm features
 jso_top10 <- topfeatures(jso_dfmPP)
+bbc_jso_top10 <- topfeatures(bbc_jso_dfmPP)
+bbc_bench_top10 <- topfeatures(bbc_bench_dfmPP)
 
 # n_grams with just + 2 words
 kwic(jso_tokens_pp, "oil", window = 3)
 
 # collocations with 3 words
 jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
+bbc_jso_threeword <- textstat_collocations(bbc_jso_tokens_pp, size = 3, )
+bbc_threeword <- textstat_collocations(bbc_tokens_pp, size = 3, )
+bbc_bench_threeword <- textstat_collocations(bbc_bench_tokens_pp, size = 3, )
 ```
 
-## Sentiment analysis
+## Sentiment analysis JSO
 
 ```{r}
 dict_pol <- data_dictionary_HuLiu
-sentiment <- dfm_lookup(jso_dfmPP, dict_pol)
-textstat_polarity(jso_dfmPP, dict_pol)
+sentiment_jso <- dfm_lookup(jso_dfmPP, dict_pol)
+textstat_polarity(jso_dfmPP, dict_pol_jso)
 textstat_valence(jso_dfmPP, data_dictionary_AFINN)
 ```
 
-```{r}
-df_jso <- dfm(jso_tokens_pp) %>% convert(to = "data.frame")
+## Sentiment analysis BBC
 
-dfm_matrix <- dfm(jso_tokens_pp)
+```{r}
+sentiment_bbc_jso <- dfm_lookup(bbc_dfmPP, dict_pol)
+textstat_polarity(bbc_jso_dfmPP, dict_pol)
+textstat_valence(bbc_dfmPP, data_dictionary_AFINN)
+
+sentiment_bbc_bench <- dfm_lookup(bbc_dfmPP, dict_pol)
+textstat_polarity(bbc_bench_dfmPP, dict_pol)
+textstat_valence(bbc_dfmPP, data_dictionary_AFINN)
+```
+
+```{r}
+#df_jso <- dfm(jso_tokens_pp) %>% convert(to = "data.frame")
+
+dfm_matrix_jso <- dfm(jso_tokens_pp)
+dfm_matrix_bbc_jso <- dfm(bbc_jso_tokens_pp)
+dfm_matrix_bbc_bench <- dfm(bbc_bench_tokens_pp)
 
 # Convert the dfm to a tidy format
-tidy_df <- tidy(dfm_matrix)
+tidy_df_jso <- tidy(dfm_matrix_jso)
+tidy_df_bbc_jso <- tidy(dfm_matrix_bbc_jso)
+tidy_df_bbc_bench <- tidy(dfm_matrix_bbc_bench)
 
 # Get different lexica
 sentiment_lexicon <- get_sentiments("bing")
 
 # Join with the tokenized words and calculate sentiment scores
-sentiment_df <- tidy_df %>%
+sentiment_df_jso <- tidy_df_jso %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+
+sentiment_df_bbc_jso <- tidy_df_bbc_jso %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+
+sentiment_df_bbc_bench <- tidy_df_bbc_bench %>%
   inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
   group_by(document) %>%
   summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
@@ -92,8 +184,15 @@ sentiment_df <- tidy_df %>%
 
 ```{r}
 # Plot histogram of sentiment scores
-ggplot(sentiment_df, aes(x = sentiment)) +
+ggplot(sentiment_df_jso, aes(x = sentiment)) +
   geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
+
+ggplot(sentiment_df_bbc, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
   theme_minimal() +
   labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
        x = "Sentiment Score",
@@ -102,27 +201,121 @@ ggplot(sentiment_df, aes(x = sentiment)) +
 
 ```{r}
 # Calculate the mean and standard deviation of the sentiment scores
-mean_sentiment <- mean(sentiment_df$sentiment, na.rm = TRUE)
-sd_sentiment <- sd(sentiment_df$sentiment, na.rm = TRUE)
+mean_sentiment_jso <- mean(sentiment_df_jso$sentiment, na.rm = TRUE)
+sd_sentiment_jso <- sd(sentiment_df_jso$sentiment, na.rm = TRUE)
+mean_sentiment_bbc_jso <- mean(sentiment_df_bbc_jso$sentiment, na.rm = TRUE)
+sd_sentiment_bbc_jso <- sd(sentiment_df_bbc_jso$sentiment, na.rm = TRUE)
+mean_sentiment_bbc_bench <- mean(sentiment_df_bbc_bench$sentiment, na.rm = TRUE)
+sd_sentiment_bbc_bench <- sd(sentiment_df_bbc_bench$sentiment, na.rm = TRUE)
+```
 
+```{r}
 # Plot the histogram with a fitted normal distribution
-ggplot(sentiment_df, aes(x = sentiment)) +
+ggplot(sentiment_df_jso, aes(x = sentiment)) +
   geom_histogram(aes(y = ..density..), binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
-  stat_function(fun = dnorm, args = list(mean = mean_sentiment, sd = sd_sentiment), color = "red", linewidth = 1) +
+  stat_function(fun = dnorm, args = list(mean = mean_sentiment_jso, sd = sd_sentiment_jso), color = "red", linewidth = 1) +
   theme_minimal() +
   labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
        x = "Sentiment Score",
        y = "Density")
 ```
 
+```{r}
+# Add a source column to distinguish the datasets
+sentiment_df_jso$source <- "Just Stop Oil"
+sentiment_df_bbc_jso$source <- "BBC - Just Stop Oil"
+sentiment_df_bbc_bench$source <- "BBC - Bench"
+
+# Combine the data frames
+combined_sentiment_df <- rbind(sentiment_df_jso, sentiment_df_bbc_jso, sentiment_df_bbc_bench)
+
+# Plot using facets
+ggplot(combined_sentiment_df, aes(x = sentiment)) +
+  geom_histogram(data = subset(combined_sentiment_df, source == "Just Stop Oil"),
+                 binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  #stat_function(fun = dnorm, args = list(mean = mean_sentiment_jso, sd = sd_sentiment_jso), color = "red", linewidth = 1) +
+  geom_histogram(data = subset(combined_sentiment_df, source == "BBC - Just Stop Oil"),
+                 binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  geom_histogram(data = subset(combined_sentiment_df, source == "BBC - Bench"),
+                 binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
+  facet_wrap(~ source, ncol = 1) +  # Create facets based on the source column
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
+
+```
+
+```{r}
+# Plot for Just Stop Oil
+library(gridExtra)
+
+# Determine the common xlim for all plots centered around 0
+max_abs_sentiment <- max(abs(c(
+  min(sentiment_df_jso$sentiment),
+  max(sentiment_df_jso$sentiment),
+  min(sentiment_df_bbc_jso$sentiment),
+  max(sentiment_df_bbc_jso$sentiment),
+  min(sentiment_df_bbc_bench$sentiment),
+  max(sentiment_df_bbc_bench$sentiment)
+)))
+
+global_xlim <- c(-max_abs_sentiment, max_abs_sentiment)
+
+# Plot for Just Stop Oil
+plot_jso <- ggplot(sentiment_df_jso, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_sentiment_jso), color = "black", linetype = "solid", size = 1.5) +
+  theme_minimal() +
+  labs(title = "Just Stop Oil",
+       x = "",
+       y = "") +
+  xlim(global_xlim)
+
+# Plot for BBC - Just Stop Oil
+plot_bbc_jso <- ggplot(sentiment_df_bbc_jso, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_sentiment_bbc_jso), color = "black", linetype = "solid", size = 1.5) +
+  theme_minimal() +
+  labs(title = "BBC - Just Stop Oil",
+       x = "",
+       y = "Number of Articles") +
+  xlim(global_xlim)
+
+# Plot for BBC - Bench
+plot_bbc_bench <- ggplot(sentiment_df_bbc_bench, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_sentiment_bbc_bench), color = "black", linetype = "solid", size = 1.5) +
+  theme_minimal() +
+  labs(title = "BBC - Bench",
+       x = "Sentiment Score",
+       y = "") +
+  xlim(global_xlim)
+
+# Arrange the plots in a single figure
+grid.arrange(plot_jso, plot_bbc_jso, plot_bbc_bench, ncol = 1)
+```
+
 ## Co-occurence matrix
 
 ```{r}
 jso_fcm_pp <- fcm(jso_tokens_pp, context = "window", count = "frequency", window = 3)
-# fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
-dim(fcm_pp)
+bbc_jso_fcm_pp <- fcm(bbc_jso_tokens_pp, context = "window", count = "frequency", window = 3)
+bbc_bench_fcm_pp <- fcm(bbc_bench_tokens_pp, context = "window", count = "frequency", window = 3)
+bbc_fcm_pp <- fcm(bbc_tokens_pp, context = "window", count = "frequency", window = 3)
 
-fcm_pp_subset <- fcm_select(jso_fcm_pp, names(topfeatures(dfm_matrix, 30)))
 
-textplot_network(fcm_pp_subset)
+fcm_pp_subset_jso <- fcm_select(jso_fcm_pp, names(topfeatures(dfm_matrix_jso, 30)))
+fcm_pp_subset_bbc_jso <- fcm_select(bbc_jso_fcm_pp, names(topfeatures(dfm_matrix_bbc_jso, 30)))
+fcm_pp_subset_bbc_bench <- fcm_select(bbc_bench_fcm_pp, names(topfeatures(dfm_matrix_bbc_bench, 30)))
+fcm_pp_subset_bbc <- fcm_select(bbc_fcm_pp, names(topfeatures(dfm_matrix_bbc_bench, 30)))
+
+textplot_network(fcm_pp_subset, edge_color = "skyblue")
+textplot_network(fcm_pp_subset_bbc_jso, edge_color = "blue")
+textplot_network(fcm_pp_subset_bbc_bench, edge_color = "green")
+textplot_network(fcm_pp_subset_bbc, edge_color = "red")
+
+# gsub regex, split
 ```
+
+## Topic modelling via kmeans clustering
