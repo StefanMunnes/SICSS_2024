@@ -35,7 +35,7 @@ activism_news <- bind_rows(
 )
 ```
 
-## Bag-of-words for JSO 
+## Bag-of-words for JSO
 
 ```{r}
 
@@ -71,7 +71,7 @@ jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
 
 ```
 
-## For BBC 
+## For BBC
 
 ```{r}
 
@@ -108,7 +108,7 @@ bbc_threeword <- textstat_collocations(bbc_tokens_pp, size = 3, )
 
 ```
 
-## For both data sources 
+## For both data sources
 
 ```{r}
 #for all sources 
@@ -145,12 +145,13 @@ all_threeword <- textstat_collocations(all_tokens_pp, size = 3, )
 
 ## 
 
-```{}
+```         
 ```
 
 ## Co-occurence matrix
 
 ```{r}
+
 jso_fcm_pp <- fcm(jso_tokens_pp, context = "window", count = "frequency", window = 3)
 # fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
 dim(fcm_pp)
@@ -182,7 +183,7 @@ all_fcm_pp_subset <- fcm_select(all_fcm_pp, names(topfeatures(dfm_matrix, 30)))
 textplot_network(all_fcm_pp_subset)
 ```
 
-# Keyness Analysis 
+# Keyness Analysis
 
 Keyness analysis identifies the features that are statistically significant in distinguishing between the target and reference groups. Here, it looks for terms that are more or less prevalent in documents where `just_stop_oil` is "0" compared to documents where it is not "0".
 
