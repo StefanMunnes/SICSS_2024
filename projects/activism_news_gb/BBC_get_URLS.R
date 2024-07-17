@@ -22,19 +22,19 @@ remDr$navigate("https://www.bbc.com/search?q=%22just%20stop%20oil%22&edgeauth=ey
 Sys.sleep(10)
 
 # Reject cookies
-remDr$findElement(using = "xpath", "//button[@aria-label='I agree']")$clickElement()
+#remDr$findElement(using = "xpath", "//button[@aria-label='I agree']")$clickElement()
 
 # Click search button
-remDr$findElement(using = "xpath", "//button[@id='headerSearchIcon']")$clickElement()
+#remDr$findElement(using = "xpath", "//button[@id='headerSearchIcon']")$clickElement()
 
 # Find and save searchbox as object
-searchbox <- remDr$findElement(using = "xpath", "//input[@aria-label='Search']")
+#searchbox <- remDr$findElement(using = "xpath", "//input[@aria-label='Search']")
 
 # Click searchbox
-searchbox$clickElement()
+#searchbox$clickElement()
 
 # Write search term
-searchbox$sendKeysToElement(list('\"oil\"', key = "enter"))
+#searchbox$sendKeysToElement(list('\"oil\"', key = "enter"))
 
 # Limit search to stories
 remDr$findElement(using = "xpath", "//label[@for='collection_article']")$clickElement()
@@ -94,7 +94,7 @@ urls
 remote_driver$server$stop()
 
 #filter for /bbc/news
-news_urls <- grep("https://www.bbc.com/news", urls, value = TRUE)
+news_urls <- grep("https://www.bbc.com/news/", urls, value = TRUE)
 news_urls <- unique(news_urls)
 
 print(news_urls)
