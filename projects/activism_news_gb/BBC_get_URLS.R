@@ -94,7 +94,7 @@ urls
 remote_driver$server$stop()
 
 #filter for /bbc/news
-news_urls <- grep("https://www.bbc.com/news", urls, value = TRUE)
+news_urls <- grep("https://www.bbc.com/news/", urls, value = TRUE)
 news_urls <- unique(news_urls)
 
 print(news_urls)
