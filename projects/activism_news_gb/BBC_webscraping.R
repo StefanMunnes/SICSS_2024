@@ -55,6 +55,7 @@ all_articles <- lapply(news_urls, scrape_article)
 all_articles <- bind_rows(all_articles)
 test_article <- scrape_article("https://www.bbc.com/news/articles/crge8vjg8y3o")
 
+write.csv(all_articles, "bbc_df.csv", row.names = FALSE)
 
 #time cut
 #dummy to classify if "Just Stop Oil" and others without as benchmark
