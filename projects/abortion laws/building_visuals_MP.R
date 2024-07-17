@@ -15,7 +15,8 @@ library(svglite)
 #########################################################################
 
 # read in articles
-source <- read.csv("~/SICSS/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
+source <- read.csv("~/SICSS/SICSS_2024/projects/abortion laws/prepared_article_data/time_abortion_MP.csv")
+outlet <- "time"
 head(source)
 
 # clean row "author"
@@ -66,10 +67,10 @@ source_gender$year_min = NULL
 source_gender$year_max = NULL
 
 # Tokenization Source
-corpus <- corpus(source_gender, text_field = "body")
+corpus <- corpus(source, text_field = "body")
 
 # remove these words
-words2remove <-  append(stopwords("en"),c("abortion", "said", " CNN ", "v", " s "))
+words2remove <-  append(stopwords("en"),c("abortion", "said", " CNN ", "v", " s ","abortions","says","also","can","it's"))
 
 ############################################################################
 # QUANTEDA Visualizations
@@ -84,7 +85,7 @@ dfmat_source <- corpus_subset(corpus) |>
          remove_separators = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 1000, verbose = FALSE)
+  dfm_trim(min_termfreq = 100, verbose = FALSE)
 textplot_wordcloud(dfmat_source)
 
 # wordcloud gendered
@@ -98,11 +99,13 @@ dfmat_source_gender <- corpus_subset(corpus,
   tokens_remove(words2remove) |>
   dfm() |>
   dfm_group(groups = gender) |>
-  dfm_trim(min_termfreq = 300, verbose = FALSE)
+  dfm_trim(min_termfreq = 150, verbose = FALSE)
   textplot_wordcloud(dfmat_source_gender,
     comparison = TRUE,
     min_size = 2,
     max_size = 10)
+
+  ggsave(filename = paste0(outlet,"_worldcloud_gendered.svg"), plot=last_plot())
 
 # frequency diagramm
 tstat_freq_source <- textstat_frequency(dfmat_source, n = 100)
@@ -113,7 +116,8 @@ ggplot(tstat_freq_source,
   geom_point() + 
   labs(x = "Frequency", y = "Feature")
 
-ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_1.svg", plot=last_plot())
+#ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_1.svg", plot=last_plot())
+ggsave(filename = paste0(outlet,"_freqdiag.svg"), plot=last_plot())
 
 # frequency diagramm gendered
 
@@ -125,29 +129,35 @@ dfmat_source_female <- dfm_subset(dfmat_source, gender == "female")
 tstat_freq_source_female <- textstat_frequency(dfmat_source_female)
 
 #second version
-dfmat_source_f <- corpus_subset(corpus) |> 
+dict_remove <- dictionary(list(words=c("abortion","also","already","abort","aborted","aborting","says","can")))
+
+dfmat_source_f <- corpus |> 
   tokens(remove_punct = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 2000, verbose = FALSE) %>%
+ # dfm_select(pattern=dict_remove,selection = "remove",case_insensitive = TRUE)%>%
+  dfm_trim(min_termfreq = 200, verbose = FALSE) %>%
   dfm_subset(gender =="female")
 
-dfmat_source_m <- corpus_subset(corpus) |> 
+
+dfmat_source_m <- corpus |> 
   tokens(remove_punct = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 2000, verbose = FALSE) %>%
+ # dfm_select(pattern=dict_remove,selection = "remove",case_insensitive = TRUE)%>%
+  dfm_trim(min_termfreq = 200, verbose = FALSE) %>%
   dfm_subset(gender =="male")
+
 tstat_freq_source_male2 <- textstat_frequency(dfmat_source_m)
 tstat_freq_source_female2 <- textstat_frequency(dfmat_source_f)
 
 # Plotting (for version 2 switch data to "...male2")
 ggplot() +
-  geom_point(data = tstat_freq_source_male,
+  geom_point(data = tstat_freq_source_male2,
              aes(x = frequency, 
                  y = reorder(feature, frequency),
                  color = "Male")) +
-  geom_point(data = tstat_freq_source_female, 
+  geom_point(data = tstat_freq_source_female2, 
              aes(x = frequency, 
                  y = reorder(feature, frequency), 
                  color = "Female")) +
@@ -161,7 +171,7 @@ ggplot() +
   theme(legend.position = "top",
         axis.text.y = element_text(lineheight = 10,
                                    size = 10))
-ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_2.svg", plot=last_plot())
+ggsave(filename = paste0(outlet,"_freqdiag_gen_ver2.svg"), plot=last_plot())
 
 # Topfeatures
 topfeatures(dfmat_source_f, 10)
@@ -176,8 +186,10 @@ textstat_collocations(test_f) %>%
   head(15)
 
 # Topic Model
-tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 4)
-terms(tmod_lda, 5)
+tmod_lda <- textmodel_lda(dfmat_source[1:90, ], k = 3)
+topics <- terms(tmod_lda, 10)
+
+write.csv(topics,file = paste0(outlet,"_topics.csv"))
 #topics(tmod_lda)
 
 # Testing stuff
