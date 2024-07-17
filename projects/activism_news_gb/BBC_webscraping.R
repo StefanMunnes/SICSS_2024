@@ -57,6 +57,34 @@ test_article <- scrape_article("https://www.bbc.com/news/articles/crge8vjg8y3o")
 
 write.csv(all_articles, "bbc_df.csv", row.names = FALSE)
 
-#time cut
+#Preprocessing
+
+#time cut # 23 June 2024
+class(all_articles$date)
+
+cutoff_date <- as.Date('2023-06-01')
+
+# Filter the dataframe
+filtered_bbc <- all_articles %>%
+  filter(date >= cutoff_date)
+
+filtered_bbc
+
+#remove urls that contain "https://www.bbc.com/news/video"
+
+filtered_bbc2 <- filtered_bbc %>%
+  filter(!str_detect(url, "https://www.bbc.com/news/video"))
+
+filtered_bbc2
+
 #dummy to classify if "Just Stop Oil" and others without as benchmark
+#Add a dummy that contains a column which indicates whether the body of the article contains "Just Stop Oil"
+
+filtered_bbc3 <- filtered_bbc2 %>%
+  mutate(just_stop_oil = ifelse(str_detect(body, "Just Stop Oil"), 1, 0))
+
+hist(filtered_bbc3$just_stop_oil)
+
 #other protests
+
+write.csv(filtered_bbc3, "pp_bbc_df.csv", row.names = FALSE)
