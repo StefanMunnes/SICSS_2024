@@ -27,7 +27,8 @@ library(quanteda.sentiment)
 ```{r}
 # Import the CSV files
 df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
-df_bbc <- read.csv("pp_bbc_df.csv")
+#df_bbc <- read.csv("pp_bbc_df.csv")
+df_bbc <- read.csv("bbc_df_clean.csv")
 
 # Brief statistics bbc
 # Assuming your dataframe is named df
@@ -134,7 +135,7 @@ bbc_bench_threeword <- textstat_collocations(bbc_bench_tokens_pp, size = 3, )
 ```{r}
 dict_pol <- data_dictionary_HuLiu
 sentiment_jso <- dfm_lookup(jso_dfmPP, dict_pol)
-textstat_polarity(jso_dfmPP, dict_pol_jso)
+textstat_polarity(jso_dfmPP, dict_pol)
 textstat_valence(jso_dfmPP, data_dictionary_AFINN)
 ```
 
@@ -191,7 +192,7 @@ ggplot(sentiment_df_jso, aes(x = sentiment)) +
        x = "Sentiment Score",
        y = "Number of Articles")
 
-ggplot(sentiment_df_bbc, aes(x = sentiment)) +
+ggplot(sentiment_df_bbc_bench, aes(x = sentiment)) +
   geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
   theme_minimal() +
   labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
@@ -210,17 +211,6 @@ sd_sentiment_bbc_bench <- sd(sentiment_df_bbc_bench$sentiment, na.rm = TRUE)
 ```
 
 ```{r}
-# Plot the histogram with a fitted normal distribution
-ggplot(sentiment_df_jso, aes(x = sentiment)) +
-  geom_histogram(aes(y = ..density..), binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
-  stat_function(fun = dnorm, args = list(mean = mean_sentiment_jso, sd = sd_sentiment_jso), color = "red", linewidth = 1) +
-  theme_minimal() +
-  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
-       x = "Sentiment Score",
-       y = "Density")
-```
-
-```{r}
 # Add a source column to distinguish the datasets
 sentiment_df_jso$source <- "Just Stop Oil"
 sentiment_df_bbc_jso$source <- "BBC - Just Stop Oil"
@@ -233,7 +223,6 @@ combined_sentiment_df <- rbind(sentiment_df_jso, sentiment_df_bbc_jso, sentiment
 ggplot(combined_sentiment_df, aes(x = sentiment)) +
   geom_histogram(data = subset(combined_sentiment_df, source == "Just Stop Oil"),
                  binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
-  #stat_function(fun = dnorm, args = list(mean = mean_sentiment_jso, sd = sd_sentiment_jso), color = "red", linewidth = 1) +
   geom_histogram(data = subset(combined_sentiment_df, source == "BBC - Just Stop Oil"),
                  binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
   geom_histogram(data = subset(combined_sentiment_df, source == "BBC - Bench"),
@@ -318,4 +307,79 @@ textplot_network(fcm_pp_subset_bbc, edge_color = "red")
 # gsub regex, split
 ```
 
-## Topic modelling via kmeans clustering
+## Topic modelling via kmeans clustering and OpenAI prompt
+
+### JSO dataset - 5 clusters
+
+```{r}
+df_jso_clusters5 <- read.csv("topicsANDclusters_JSO_5.csv")
+
+# Extract titles based on k_means values
+titles_cluster_1 <- df_jso_clusters5 %>% filter(cluster_kmeans == 1) %>% select(title)
+titles_cluster_2 <- df_jso_clusters5 %>% filter(cluster_kmeans == 2) %>% select(title)
+titles_cluster_3 <- df_jso_clusters5 %>% filter(cluster_kmeans == 3) %>% select(title)
+titles_cluster_4 <- df_jso_clusters5 %>% filter(cluster_kmeans == 4) %>% select(title)
+titles_cluster_5 <- df_jso_clusters5 %>% filter(cluster_kmeans == 5) %>% select(title)
+
+# Cluster 1: Student Protests
+# Cluster 2: Civil Resistance and Public Appeals
+# Cluster 3: Protests and Statements
+# Cluster 4: Legal Battles
+# Cluster 5: Trials and Legal Proceedings
+```
+
+### JSO dataset - 3 clusters
+
+```{r}
+df_jso_clusters3 <- read.csv("topicsANDclusters_JSO_3.csv")
+
+# Extract titles based on k_means values
+titles_cluster_21 <- df_jso_clusters3 %>% filter(cluster_kmeans == 1) %>% select(title)
+titles_cluster_22 <- df_jso_clusters3 %>% filter(cluster_kmeans == 2) %>% select(title)
+titles_cluster_23 <- df_jso_clusters3 %>% filter(cluster_kmeans == 3) %>% select(title)
+
+# Cluster 1: Legal Challenges and Activist Actions 
+# Cluster 2: Wide-ranging Activism and Advocacy Efforts 
+# Cluster 3: Legal Challenges and Activism Against Repressive Laws
+
+print(titles_cluster_23$title)
+
+```
+
+### BBC dataset - 5 clusters
+
+```{r}
+df_bbc_clusters5 <- read.csv("topicsANDclusters_BBC_5.csv")
+
+# Extract titles based on k_means values
+titles_cluster_bbc_1 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 1) %>% select(title)
+titles_cluster_bbc_2 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 2) %>% select(title)
+titles_cluster_bbc_3 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 3) %>% select(title)
+titles_cluster_bbc_4 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 4) %>% select(title)
+titles_cluster_bbc_5 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 5) %>% select(title)
+
+# Cluster 1: Current Affairs and Events
+# Cluster 2: Protests and Acts of Civil Disobedience
+# Cluster 3: Protests and Civil Disobedience Actions
+# Cluster 4: Protests and Legal Issues Involving Just Stop Oil Activists 
+# Cluster 5: Recent Developments in Protests, Elections, and Legal Challenges
+print(titles_cluster_bbc_5$title)
+```
+
+### BBC dataset - 3 clusters
+
+```{r}
+df_bbc_clusters3 <- read.csv("topicsANDclusters_BBC_3.csv")
+
+# Extract titles based on k_means values
+titles_cluster_bbc_21 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 1) %>% select(title)
+titles_cluster_bbc_22 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 2) %>% select(title)
+titles_cluster_bbc_23 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 3) %>% select(title)
+
+
+# Cluster 1: Legal and Social Impact of Just Stop Oil Protests
+# Cluster 2: Protests and Legal Challenges in Various Public and Political Settings
+# Cluster 3: Protests and Civil Disobedience Actions
+
+print(titles_cluster_bbc_23$title)
+```
