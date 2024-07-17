@@ -41,12 +41,26 @@ I searched for "YOUR SEARCH TERM HERE" on https://time.com/.
 
 This task is basically the testing phase for task 4. You go to the webpage, in this case one example article, and find the CSS selectors that work for what you need and note them down.
 
--   Title:
+-   Title: .bWszMR
 -   Authors:
 -   Date:
 -   Text:
 
 ```{r}
+website <- read_html("https://time.com/6994916/meta-ordered-to-stop-mining-brazilian-personal-data-train-ai/")
+
+title <- website %>%
+  html_node(".self-baseline") %>%
+  html_text()
+
+text <- website %>%
+  html_nodes("#article-body") %>%
+  html_text() %>%
+  paste(collapse = "")
+
+author <- website %>%
+  html_nodes("#article-body a.font-bold") %>%
+  html_text()
 
 ```
 
