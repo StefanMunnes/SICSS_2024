@@ -28,19 +28,18 @@ View(zeit_clean)
 
 # clean "body" variable 
 
-zeit_clean$body_clean <- zeit_clean$body %>%
-  # Replace German Umlaute and ß
-  str_replace_all("ä", "ae") %>%
-  str_replace_all("ö", "oe") %>%
-  str_replace_all("ü", "ue") %>%
-  str_replace_all("ß", "ss") %>%
+zeit_clean$body_clean <- zeit_clean$body |>
+  str_replace_all("ä", "ae") |>
+  str_replace_all("ö", "oe") |>
+  str_replace_all("ü", "ue") |>
+  str_replace_all("ß", "ss") |>
   # Remove text within curly brackets {} and angle brackets <>
-  str_replace_all("\\{.*?\\}", "") %>%
-  str_replace_all("<.*?>", "") %>%
+  str_replace_all("\\{.*?\\}", "") |>
+  str_replace_all("<.*?>", "") |>
   # Remove curly brackets {} and angle brackets <>
   str_replace_all("[{}<>]", "")
 
-
+#print(zeit_clean$body_clean)
 
 # cleaning of "author"
 # Remove titles from the author column
