@@ -28,7 +28,7 @@ factoextra::fviz_cluster(cluster_kmeans5,
                          ggtheme = ggplot2::theme_bw()
 )
 
-write.csv(df_just_stop_oil, file = "/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/topicsANDclusters_BBC_5.csv")
+write.csv(df_bbc_jso, file = "/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/topicsANDclusters_BBC_5.csv")
 
 
 
@@ -44,5 +44,5 @@ factoextra::fviz_cluster(cluster_kmeans3,
                          ggtheme = ggplot2::theme_bw()
 )
 
-write.csv(df_just_stop_oil, file = "/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/topicsANDclusters_BBC_3.csv")
+write.csv(df_bbc_jso, file = "/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/topicsANDclusters_BBC_3.csv")
 
