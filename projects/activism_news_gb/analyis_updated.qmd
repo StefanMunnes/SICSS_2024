@@ -321,11 +321,12 @@ titles_cluster_3 <- df_jso_clusters5 %>% filter(cluster_kmeans == 3) %>% select(
 titles_cluster_4 <- df_jso_clusters5 %>% filter(cluster_kmeans == 4) %>% select(title)
 titles_cluster_5 <- df_jso_clusters5 %>% filter(cluster_kmeans == 5) %>% select(title)
 
-# Cluster 1: Student Protests
-# Cluster 2: Civil Resistance and Public Appeals
-# Cluster 3: Protests and Statements
-# Cluster 4: Legal Battles
-# Cluster 5: Trials and Legal Proceedings
+# Prompting with ChatGPT-4o
+jso_5_tit1 <- "Student Protests"
+jso_5_tit2 <- "Civil Resistance and Public Appeals"
+jso_5_tit3 <- "Protests and Statements"
+jso_5_tit4 <- "Legal Battles"
+jso_5_tit5 <- "Trials and Legal Proceedings"
 ```
 
 ### JSO dataset - 3 clusters
@@ -338,11 +339,10 @@ titles_cluster_21 <- df_jso_clusters3 %>% filter(cluster_kmeans == 1) %>% select
 titles_cluster_22 <- df_jso_clusters3 %>% filter(cluster_kmeans == 2) %>% select(title)
 titles_cluster_23 <- df_jso_clusters3 %>% filter(cluster_kmeans == 3) %>% select(title)
 
-# Cluster 1: Legal Challenges and Activist Actions 
-# Cluster 2: Wide-ranging Activism and Advocacy Efforts 
-# Cluster 3: Legal Challenges and Activism Against Repressive Laws
-
-print(titles_cluster_23$title)
+# Prompting with ChatGPT-4
+jso_3_tit1 <- "Legal Challenges and Activist Actions" 
+jso_3_tit2 <- "Wide-ranging Activism and Advocacy Efforts" 
+jso_3_tit3 <- "Legal Challenges and Activism Against Repressive Laws"
 
 ```
 
@@ -358,12 +358,13 @@ titles_cluster_bbc_3 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 3) %>% se
 titles_cluster_bbc_4 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 4) %>% select(title)
 titles_cluster_bbc_5 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 5) %>% select(title)
 
-# Cluster 1: Current Affairs and Events
-# Cluster 2: Protests and Acts of Civil Disobedience
-# Cluster 3: Protests and Civil Disobedience Actions
-# Cluster 4: Protests and Legal Issues Involving Just Stop Oil Activists 
-# Cluster 5: Recent Developments in Protests, Elections, and Legal Challenges
-print(titles_cluster_bbc_5$title)
+# Prompting with ChatGPT-4o
+bbc_5_tit1 <- "Current Affairs and Events"
+bbc_5_tit2 <- "Protests and Acts of Civil Disobedience"
+bbc_5_tit3 <- "Protests and Civil Disobedience Actions"
+bbc_5_tit4 <- "Protests and Legal Issues Involving Just Stop Oil Activists" 
+bbc_5_tit5 <- "Recent Developments in Protests, Elections, and Legal Challenges"
+
 ```
 
 ### BBC dataset - 3 clusters
@@ -376,10 +377,8 @@ titles_cluster_bbc_21 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 1) %>% s
 titles_cluster_bbc_22 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 2) %>% select(title)
 titles_cluster_bbc_23 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 3) %>% select(title)
 
-
-# Cluster 1: Legal and Social Impact of Just Stop Oil Protests
-# Cluster 2: Protests and Legal Challenges in Various Public and Political Settings
-# Cluster 3: Protests and Civil Disobedience Actions
-
-print(titles_cluster_bbc_23$title)
+# Prompting with ChatGPT-4o
+bbc_3_tit1 <- "Legal and Social Impact of Just Stop Oil Protests"
+bbc_3_tit2 <- "Protests and Legal Challenges in Various Public and Political Settings"
+bbc_3_tit3 <- "Protests, Controversies, and Cultural Highlights"
 ```
