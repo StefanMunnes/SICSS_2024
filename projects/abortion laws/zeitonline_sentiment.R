@@ -3,12 +3,15 @@
 
 #install.packages("textplot")
 library(dplyr)
+library(readr)
 library(quanteda)
 library(quanteda.sentiment) 
 library(quanteda.textstats)
 library(quanteda.textplots)
+library(quanteda.textmodels)
 library(textplot)
 library(stringr)
+library(seededlda)
 
 
 data <- read.csv("~/SICSS_2024/projects/abortion laws/zeit_abortion_merged.csv")
@@ -105,4 +108,26 @@ textstat_keyness(dfm_pp, target = docvars(corpus, "gender") == "female") |>
   textplot_keyness()
 
 
+# performing sentiment analysis 
 
+dict_pol <- data_dictionary_Rauh
+
+dfm_lookup(dfm_pp, dict_pol)
+
+polarity <- textstat_polarity(dfm_pp, dict_pol)
+polarity
+
+# assuming that all documents are ordered the same way in both data frames 
+zeit_subset$doc_id <- paste0("text", 1:1867)
+
+polarity_data <- left_join(zeit_subset, polarity) 
+
+# polarity by gender
+average_scores <- polarity_data |>
+  group_by(gender) |>
+  summarize(average_score = mean(sentiment, na.rm=TRUE))
+
+average_scores
+
+# save as csv
+write_csv(polarity_data, "~/SICSS_2024/projects/abortion laws/zeit_sentiment.csv")
