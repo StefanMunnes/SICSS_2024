@@ -1,0 +1,74 @@
+---
+title: "analysis"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Import dataframes
+
+```{r}
+# Import the CSV file
+df_just_stop_oil <- read_csv("exercises/Ilaria_new/dataframe_just_stop_oil.csv")
+```
+
+## Import libraries
+
+```{r}
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(tidytext)
+library(tm)
+library(quanteda.sentiment)
+```
+
+## Bag-of-words
+
+```{r}
+#### for body ####
+corpus <- corpus(df_just_stop_oil, text_field = "body") 
+tokens <- tokens(corpus, what = "word")
+dfm <- dfm(tokens)
+
+# pre-processing tokens
+tokens_pp <- tokens(
+    corpus,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+dfmPP <- dfm(tokens_pp)
+
+# top 10 dfm features
+top10 <- topfeatures(dfmPP)
+
+# n_grams with just + 2 words
+kwic(tokens_pp, "oil", window = 3)
+
+# collocations with 3 words
+eeee <- textstat_collocations(tokens_pp, size = 3, )
+
+
+
+```
+
+Sentiment analysis
+
+```{r}
+dict_pol <- data_dictionary_HuLiu
+sentiment <- dfm_lookup(dfmPP, dict_pol)
+textstat_polarity(dfmPP, dict_pol)
+textstat_valence(dfmPP, data_dictionary_AFINN)
+```

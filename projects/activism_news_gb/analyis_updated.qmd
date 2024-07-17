@@ -1,0 +1,128 @@
+---
+title: "analysis"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Import libraries
+
+```{r}
+#install.packages("textdata")
+library(dplyr)
+library(ggplot2)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(tidytext)
+library(tm)
+library(quanteda.sentiment)
+```
+
+## Import dataframes
+
+```{r}
+# Import the CSV file
+df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+```
+
+## Bag-of-words
+
+```{r}
+#### for body ####
+corpus_jso <- corpus(df_just_stop_oil, text_field = "body") 
+tokens_jso <- tokens(corpus_jso, what = "word")
+dfm_jso <- dfm(tokens_jso)
+
+# pre-processing tokens
+jso_tokens_pp <- tokens(
+    corpus_jso,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+jso_dfmPP <- dfm(jso_tokens_pp)
+
+# top 10 dfm features
+jso_top10 <- topfeatures(jso_dfmPP)
+
+# n_grams with just + 2 words
+kwic(jso_tokens_pp, "oil", window = 3)
+
+# collocations with 3 words
+jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
+```
+
+## Sentiment analysis
+
+```{r}
+dict_pol <- data_dictionary_HuLiu
+sentiment <- dfm_lookup(jso_dfmPP, dict_pol)
+textstat_polarity(jso_dfmPP, dict_pol)
+textstat_valence(jso_dfmPP, data_dictionary_AFINN)
+```
+
+```{r}
+df_jso <- dfm(jso_tokens_pp) %>% convert(to = "data.frame")
+
+dfm_matrix <- dfm(jso_tokens_pp)
+
+# Convert the dfm to a tidy format
+tidy_df <- tidy(dfm_matrix)
+
+# Get different lexica
+sentiment_lexicon <- get_sentiments("bing")
+
+# Join with the tokenized words and calculate sentiment scores
+sentiment_df <- tidy_df %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+```
+
+```{r}
+# Plot histogram of sentiment scores
+ggplot(sentiment_df, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
+```
+
+```{r}
+# Calculate the mean and standard deviation of the sentiment scores
+mean_sentiment <- mean(sentiment_df$sentiment, na.rm = TRUE)
+sd_sentiment <- sd(sentiment_df$sentiment, na.rm = TRUE)
+
+# Plot the histogram with a fitted normal distribution
+ggplot(sentiment_df, aes(x = sentiment)) +
+  geom_histogram(aes(y = ..density..), binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  stat_function(fun = dnorm, args = list(mean = mean_sentiment, sd = sd_sentiment), color = "red", linewidth = 1) +
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Density")
+```
+
+## Co-occurence matrix
+
+```{r}
+jso_fcm_pp <- fcm(jso_tokens_pp, context = "window", count = "frequency", window = 3)
+# fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
+dim(fcm_pp)
+
+fcm_pp_subset <- fcm_select(jso_fcm_pp, names(topfeatures(dfm_matrix, 30)))
+
+textplot_network(fcm_pp_subset)
+```
