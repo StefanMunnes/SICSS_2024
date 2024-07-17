@@ -22,15 +22,16 @@ library(textdata)
 ## Import dataframes
 
 ```{r}
+
 # Import the CSV file
 df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
 bbc_df <- read.csv("bbc_df_clean.csv")
-bbc_df <- bbc_df %>%
+bbc_dfn <- bbc_df %>%
   filter(just_stop_oil == 1) %>%
   select(-just_stop_oil, -author)
 
 activism_news <- bind_rows(
-  list("jos" = df_just_stop_oil, "bbc" = bbc_df),
+  list("jso" = df_just_stop_oil, "bbc" = bbc_dfn),
   .id = "source"
 )
 ```
@@ -154,7 +155,7 @@ all_threeword <- textstat_collocations(all_tokens_pp, size = 3, )
 
 jso_fcm_pp <- fcm(jso_tokens_pp, context = "window", count = "frequency", window = 3)
 # fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
-dim(fcm_pp)
+#dim(fcm_pp)
 
 fcm_pp_subset <- fcm_select(jso_fcm_pp, names(topfeatures(dfm_matrix, 30)))
 
@@ -240,32 +241,4 @@ keyness_plot <- textplot_keyness(result) +
 
 # Print the customized plot
 print(keyness_plot)
-```
-
-```{r}
-
-head(data_dictionary_HuLiu)
-head(data_dictionary_LSD2015)
-lapply(valence(data_dictionary_AFINN), head, 10)
-lapply(valence(data_dictionary_ANEW), head, 10)
-
-
-dict_pol <- data_dictionary_HuLiu
-
-dfm_lookup(bbc_dfmPP, dict_pol)
-
-polarity <- textstat_polarity(bbc_dfmPP, dict_pol)
-
-```
-
-# Topic models analysis
-
-Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
-
-```{r}
-tmod_lda <- textmodel_lda(bbc_dfmPP[1:700, ], k = 5)
-
-terms(tmod_lda, 10)
-
-topics(tmod_lda)
 ```
