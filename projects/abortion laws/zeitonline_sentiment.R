@@ -1,7 +1,6 @@
 
-# sentiment analyses on articles related to "abortion" in Germany 
+# sentiment analyses on "Die Zeit" articles related to abortion in Germany 
 
-#install.packages("textplot")
 library(dplyr)
 library(readr)
 library(quanteda)
@@ -12,6 +11,10 @@ library(quanteda.textmodels)
 library(textplot)
 library(stringr)
 library(seededlda)
+library(tidyverse)
+library(httr2)
+library(gender)
+library(ggplot2)
 
 
 data <- read.csv("~/SICSS_2024/projects/abortion laws/zeit_abortion_merged.csv")
@@ -93,9 +96,13 @@ dfm_pp <- dfm_remove(dfm_pp, c("seit", "viel", "mehr", "ja", "sag",
                                "sei", "uns", "sagt", "frag", "ganz", 
                                "gibt", "imm", "schon", "wurd", "bereit", 
                                "erst", "weiss", "les", "mal", "sei", "geht", 
-                               "gerad", "riek", "heut", "bitt", "nehm", "zwei", 
+                               "gerad", "rieke", "heut", "bitt", "nehm", "zwei", 
                                "eben", "beid", "bissch", "tatsaech", "wirklich", 
-                               "gesagt", "ding"))
+                               "gesagt", "ding", "seite", "viele", 
+                               "klaus", "natuerlich", "tatsaechlich", "eigentlich",
+                               "brinkbaeumer", "havertz", "bereits", "haette", 
+                               "inhaltsseite", "abtreibung", "schwangerschaftsabbruch", 
+                               "schwangerschaftsabbrueche"))
 dim(dfm_pp)
 
 # top 15 collocations 
@@ -107,11 +114,11 @@ fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = 3)
 # fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
 dim(fcm_pp)
 
-fcm_pp_subset <- fcm_select(fcm_pp, names(topfeatures(dfm_pp, 30)))
+fcm_pp_subset <- fcm_select(fcm_pp, names(topfeatures(dfm_pp, 25)))
 
 # create and save textplot
 
-png(filename = "~/SICSS_2024/projects/abortion laws/textplot_zeit.png", width = 800, height = 600)
+png(filename = "~/SICSS_2024/projects/abortion laws/zeit_textplot_network.png", width = 800, height = 600)
 
 
 textplot_network(fcm_pp_subset)
@@ -119,8 +126,15 @@ dev.off()
 
 
 # differences in keywords by gender 
+png(filename = "~/SICSS_2024/projects/abortion laws/zeit_keyness_plot.png", width = 800, height = 600)
+
+# Create the plot
 textstat_keyness(dfm_pp, target = docvars(corpus, "gender") == "female") |>
   textplot_keyness()
+
+# Close the device to save the file
+dev.off()
+
 
 
 # performing sentiment analysis 
@@ -143,6 +157,60 @@ average_scores <- polarity_data |>
   summarize(average_score = mean(sentiment, na.rm=TRUE))
 
 average_scores
+
+
+
+# word cloud by gender 
+
+# removing more meaningless words... 
+
+words2remove <-  append(stopwords_trans,c("seit", "viel", "mehr", "ja", "sag", 
+                                          "sei", "uns", "sagt", "frag", "ganz", 
+                                          "gibt", "imm", "schon", "wurd", "bereit", 
+                                          "erst", "weiss", "les", "mal", "sei", "geht", 
+                                          "gerad", "rieke", "heut", "bitt", "nehm", "zwei", 
+                                          "eben", "beid", "bissch", "tatsaech", "wirklich", 
+                                          "gesagt", "ding", "seite", "viele", 
+                                          "klaus", "natuerlich", "tatsaechlich", "eigentlich",
+                                          "brinkbaeumer", "havertz", "bereits", "haette", 
+                                          "inhaltsseite", "abtreibung", "schwangerschaftsabbruch", 
+                                          "schwangerschaftsabbrueche"))
+words2remove
+
+dfmat_source <- corpus_subset(corpus) |> 
+  tokens(what = "word",
+         remove_punct = TRUE, 
+         remove_symbols = TRUE,
+         remove_numbers = TRUE,
+         remove_separators = TRUE) |>
+  tokens_remove(words2remove) |>
+  dfm() |>
+  dfm_trim(min_termfreq = 500, verbose = FALSE)
+textplot_wordcloud(dfmat_source)
+
+# wordcloud gendered
+
+png(filename = "~/SICSS_2024/projects/abortion laws/zeit_wordcloud.png", width = 800, height = 600)
+
+dfmat_source_gender <- corpus_subset(corpus, 
+                                     gender %in% c("male", "female")) |>
+  tokens(what = "word",
+         remove_punct = TRUE, 
+         remove_symbols = TRUE,
+         remove_numbers = TRUE,
+         remove_separators = TRUE) |>
+  tokens_remove(words2remove) |>
+  dfm() |>
+  dfm_group(groups = gender) |>
+  dfm_trim(min_termfreq = 300, verbose = FALSE)
+textplot_wordcloud(dfmat_source_gender,
+                   comparison = TRUE,
+                   min_size = 2,
+                   max_size = 10,
+                   color = c("red", "blue"))
+
+dev.off()
+
 
 # save as csv
 write_csv(polarity_data, "~/SICSS_2024/projects/abortion laws/zeit_sentiment.csv")
