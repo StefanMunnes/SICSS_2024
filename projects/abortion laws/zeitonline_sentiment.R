@@ -20,6 +20,7 @@ data <- read.csv("~/SICSS_2024/projects/abortion laws/zeit_abortion_merged.csv")
 
 zeit_subset <- data |> 
   select(firstname1, gender, body, body_clean, url)
+
 #View(zeit_subset)
 
 # drop if gender is missing 
@@ -87,6 +88,14 @@ textstat_frequency(dfm_pp, n = 20)
 textstat_frequency(dfm_pp, n = 10)
 
 dfm_pp <- dfm_trim(dfm_pp, min_termfreq = 2, termfreq_type = "count")
+# getting rid of words that have no meaning here 
+dfm_pp <- dfm_remove(dfm_pp, c("seit", "viel", "mehr", "ja", "sag", 
+                               "sei", "uns", "sagt", "frag", "ganz", 
+                               "gibt", "imm", "schon", "wurd", "bereit", 
+                               "erst", "weiss", "les", "mal", "sei", "geht", 
+                               "gerad", "riek", "heut", "bitt", "nehm", "zwei", 
+                               "eben", "beid", "bissch", "tatsaech", "wirklich", 
+                               "gesagt", "ding"))
 dim(dfm_pp)
 
 # top 15 collocations 
@@ -98,10 +107,16 @@ fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = 3)
 # fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
 dim(fcm_pp)
 
-fcm_pp_subset <- fcm_select(fcm_pp, names(topfeatures(dfm_pp, 40)))
+fcm_pp_subset <- fcm_select(fcm_pp, names(topfeatures(dfm_pp, 30)))
 
-# textplot
+# create and save textplot
+
+png(filename = "~/SICSS_2024/projects/abortion laws/textplot_zeit.png", width = 800, height = 600)
+
+
 textplot_network(fcm_pp_subset)
+dev.off()
+
 
 # differences in keywords by gender 
 textstat_keyness(dfm_pp, target = docvars(corpus, "gender") == "female") |>
