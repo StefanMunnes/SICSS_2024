@@ -9,51 +9,17 @@ library(tidychatmodels)
 library(httr2)
 library(gender)
 library(ggplot2)
-
+library(svglite)
 #remotes::install_github("lmullen/genderdata")
 
+#########################################################################
 
-cnn <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
-head(cnn)
+# read in articles
+source <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
+head(source)
 
-
-# Tokenization CNN
-corpus <- corpus(cnn, text_field = "body")
-tokens <- tokens(corpus, what = "word")
-dfm <- dfm(tokens)
-topfeatures(dfm, 10)
-
-# cleaning tokens
-tokens_pp <- tokens(
-  corpus,
-  what = "word",
-  remove_punct = TRUE,
-  remove_symbols = TRUE,
-  remove_numbers = TRUE,
-  remove_separators = TRUE
-)|>
-  tokens_tolower() |>
-  tokens_wordstem(language = "en") |>
-  tokens_remove(stopwords("en"), padding = TRUE)
-dfm_pp <- dfm(tokens_pp)
-
-# show cleaned data
-topfeatures(dfm_pp, 10)
-
-dict_pol <- data_dictionary_HuLiu
-
-# 
-dfm_lookup(dfm_pp, dict_pol)
-textstat_polarity(dfm_pp, dict_pol)
-textstat_valence(dfm_pp, data_dictionary_AFINN)
-
-lookup_result <- dfm_lookup(dfm_pp, dict_pol)
-lookup_df <- convert(lookup_result, to = "data.frame")
-lookup_df$url <- cnn$url
-
-
-# clean cnn$author
-cnn$author <- str_replace_all(cnn$authors, c("\\n" = "", 
+# clean row "author"
+source$author <- str_replace_all(source$authors, c("\\n" = "", 
                                               "by" = "", 
                                               "By" = "", 
                                               "CNN's" = "",
@@ -68,12 +34,12 @@ cnn$author <- str_replace_all(cnn$authors, c("\\n" = "",
                                               " and " = ";",
                                               " & " = ";"
                                               ))
-cnn$author <- str_replace_all(cnn$author, c("^\\s" = "",
+source$author <- str_replace_all(source$author, c("^\\s" = "",
                                               "\\t" = "",
                                               "$\\s" = ""
                                               ))
 
-cnn_byauthor <- cnn %>%
+source_byauthor <- source %>%
   separate_rows(author, sep = ";")%>%
   separate_rows(author, sep = ",")%>%
   mutate(author = str_trim(author)) %>%
@@ -82,62 +48,140 @@ cnn_byauthor <- cnn %>%
   mutate(first_name = word(author, 1)) %>%
   mutate(name = first_name)
 
-
-
-# lookup gender
+###########################################################################
+# GENDER OF AUTHORS
 
 # via gender package
-gendered <- cnn_byauthor %>% 
+gendered <- source_byauthor %>% 
   rowwise() %>% 
-  do(results = gender(cnn_byauthor$first_name, method = "ssa")) %>% 
+  do(results = gender(source_byauthor$first_name, method = "ssa")) %>% 
   do(bind_rows(.$results))
 
 # add gender info to cnn data
-cnn_gender <- left_join(cnn_byauthor, gendered)
+source_gender <- left_join(source_byauthor, gendered)
+
 # clean data
-cnn_gender$year_min = NULL 
-cnn_gender$year_max = NULL
-cnn_gender <- distinct(cnn_gender)
+source_gender <- distinct(source_gender)
+source_gender$year_min = NULL 
+source_gender$year_max = NULL
 
-# add positive / negative info to cnn data
-cnn2 <- left_join(cnn_gender, lookup_df, by = "url")
-cnn2 <- cnn2 %>%
-  mutate(posneg = case_when(
-    positive > negative ~ "positive",
-    positive < negative ~ "negative",
-    positive == negative ~ "unclear"
-  ))
-# clean cnn data
-cnn2$doc_id = NULL 
-cnn2$name = NULL 
+# Tokenization Source
+corpus <- corpus(source_gender, text_field = "body")
 
-# show results
-table1 <- table(cnn2$posneg, cnn2$gender)
-table2 <- round(prop.table(table(cnn2$posneg, cnn2$gender), 2),2)
-table1
-table2
+# remove these words
+words2remove <-  append(stopwords("en"),c("abortion", "said", " CNN ", "v", " s "))
+
+############################################################################
+# QUANTEDA Visualizations
+
+# wordcloud
+# base 
+dfmat_source <- corpus_subset(corpus) |> 
+  tokens(what = "word",
+         remove_punct = TRUE, 
+         remove_symbols = TRUE,
+         remove_numbers = TRUE,
+         remove_separators = TRUE) |>
+  tokens_remove(words2remove) |>
+  dfm() |>
+  dfm_trim(min_termfreq = 1000, verbose = FALSE)
+textplot_wordcloud(dfmat_source)
+
+# wordcloud gendered
+dfmat_source_gender <- corpus_subset(corpus, 
+                                  gender %in% c("male", "female")) |>
+  tokens(what = "word",
+         remove_punct = TRUE, 
+         remove_symbols = TRUE,
+         remove_numbers = TRUE,
+         remove_separators = TRUE) |>
+  tokens_remove(words2remove) |>
+  dfm() |>
+  dfm_group(groups = gender) |>
+  dfm_trim(min_termfreq = 300, verbose = FALSE)
+  textplot_wordcloud(dfmat_source_gender,
+    comparison = TRUE,
+    min_size = 2,
+    max_size = 10)
+
+# frequency diagramm
+tstat_freq_source <- textstat_frequency(dfmat_source, n = 100)
+
+ggplot(tstat_freq_source, 
+       aes(x = frequency, y = reorder(feature, frequency))
+       ) +
+  geom_point() + 
+  labs(x = "Frequency", y = "Feature")
+
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_1.svg", plot=last_plot())
+
+# frequency diagramm gendered
+
+# first version: 
+dfmat_source_male <- dfm_subset(dfmat_source, gender == "male")
+tstat_freq_source_male <- textstat_frequency(dfmat_source_male)
+
+dfmat_source_female <- dfm_subset(dfmat_source, gender == "female")
+tstat_freq_source_female <- textstat_frequency(dfmat_source_female)
+
+#second version
+dfmat_source_f <- corpus_subset(corpus) |> 
+  tokens(remove_punct = TRUE) |>
+  tokens_remove(words2remove) |>
+  dfm() |>
+  dfm_trim(min_termfreq = 2000, verbose = FALSE) %>%
+  dfm_subset(gender =="female")
+
+dfmat_source_m <- corpus_subset(corpus) |> 
+  tokens(remove_punct = TRUE) |>
+  tokens_remove(words2remove) |>
+  dfm() |>
+  dfm_trim(min_termfreq = 2000, verbose = FALSE) %>%
+  dfm_subset(gender =="male")
+tstat_freq_source_male2 <- textstat_frequency(dfmat_source_m)
+tstat_freq_source_female2 <- textstat_frequency(dfmat_source_f)
+
+# Plotting (for version 2 switch data to "...male2")
+ggplot() +
+  geom_point(data = tstat_freq_source_male,
+             aes(x = frequency, 
+                 y = reorder(feature, frequency),
+                 color = "Male")) +
+  geom_point(data = tstat_freq_source_female, 
+             aes(x = frequency, 
+                 y = reorder(feature, frequency), 
+                 color = "Female")) +
+  scale_color_manual(values = c("Female" = "red", 
+                                "Male" = "blue")) +
+  scale_x_continuous(labels = abs) +
+  labs(x = "Frequency", 
+       y = "Feature", 
+       color = "Gender") +
+  theme_minimal()+
+  theme(legend.position = "top",
+        axis.text.y = element_text(lineheight = 10,
+                                   size = 10))
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_2.svg", plot=last_plot())
+
+# Topfeatures
+topfeatures(dfmat_source_f, 10)
+topfeatures(dfmat_source_m, 10)
+
+# Collocations gendered
+test_m <- corpus_subset(corpus, gender %in% "male") 
+textstat_collocations(test_m) %>%
+  head(15)
+test_f <- corpus_subset(corpus, gender %in% "female") 
+textstat_collocations(test_f) %>%
+  head(15)
+
+# Topic Model
+tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 3)
+terms(tmod_lda, 8)
+topics(tmod_lda)
+
+# Testing stuff
+#textstat_keyness(dfmat_source, target = docvars(corpus, "gender") == "male") %>%
+#  textplot_keyness()
 
 
-# Via Ollama
-
-#cnn_byauthor$gender <- NA
-#  chat_ollama <- create_chat(
-#    vendor = 'ollama'
-#    ) %>%
-#    add_model('llama3') %>%
-#    add_message(
-#      role = 'system',
-#      message = 'give me the gender of the Name in the form "male" or "female" in one word'
-#      ) %>%
-#    add_message(
-#      role = 'User',
-#      message = "Maria"
-#      ) %>%
-#    perform_chat()
-#  msgs <- chat_ollama %>% extract_chat(silent = TRUE)
-#  msgs$message[3] |> cat()
-  
-#for (i in 1:nrow(cnn_byauthor)) {
-#  tmp <- cnn_byauthor$author[i]
-#  cnn_byauthor$gender[i] <- gender_response(tmp)
-#}

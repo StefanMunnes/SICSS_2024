@@ -9,6 +9,7 @@ library(tidychatmodels)
 library(httr2)
 library(gender)
 library(ggplot2)
+library(svglite)
 
 #remotes::install_github("lmullen/genderdata")
 
@@ -219,9 +220,9 @@ ggplot() +
        color = "Gender") +
   theme_minimal()+
   theme(legend.position = "top",
-        axis.text.y = element_text(lineheight = 5,
+        axis.text.y = element_text(lineheight = 10,
                                    size = 10))
-
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn.svg", plot=last_plot())
 
 
 
