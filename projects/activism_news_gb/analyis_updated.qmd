@@ -317,3 +317,17 @@ textplot_network(fcm_pp_subset_bbc, edge_color = "red")
 
 # gsub regex, split
 ```
+
+```{python}
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('bert-base-nli-mean-tokens')
+
+# Encode titles to embeddings
+title_embeddings = model.encode(titles)
+
+# Save embeddings to a numpy file
+np.save('title_embeddings.npy', title_embeddings)
+```
+
+## Topic modelling via kmeans clustering
