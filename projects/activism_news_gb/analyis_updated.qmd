@@ -8,18 +8,12 @@ editor: visual
 
 Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
 
-## Import dataframes
-
-```{r}
-# Import the CSV file
-df_just_stop_oil <- read_csv("dataframe_just_stop_oil.csv")
-```
-
 ## Import libraries
 
 ```{r}
-install.packages("textdata")
+#install.packages("textdata")
 library(dplyr)
+library(ggplot2)
 library(quanteda)
 library(quanteda.textstats)
 library(quanteda.textplots)
@@ -28,12 +22,19 @@ library(tm)
 library(quanteda.sentiment)
 ```
 
+## Import dataframes
+
+```{r}
+# Import the CSV file
+df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+```
+
 ## Bag-of-words
 
 ```{r}
 #### for body ####
 corpus_jso <- corpus(df_just_stop_oil, text_field = "body") 
-tokens_jso <- tokens(corpus, what = "word")
+tokens_jso <- tokens(corpus_jso, what = "word")
 dfm_jso <- dfm(tokens_jso)
 
 # pre-processing tokens
@@ -66,9 +67,9 @@ jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
 
 ```{r}
 dict_pol <- data_dictionary_HuLiu
-sentiment <- dfm_lookup(dfmPP, dict_pol)
-textstat_polarity(dfmPP, dict_pol)
-textstat_valence(dfmPP, data_dictionary_AFINN)
+sentiment <- dfm_lookup(jso_dfmPP, dict_pol)
+textstat_polarity(jso_dfmPP, dict_pol)
+textstat_valence(jso_dfmPP, data_dictionary_AFINN)
 ```
 
 ```{r}
