@@ -3,81 +3,39 @@ library(sentence)
 library(reticulate)
 library(dplyr)
 library(factoextra)
-
 library(quanteda.textmodels)
 library(seededlda)
 
-from sentence_transformers import SentenceTransformer
+
 df_just_stop_oil <- read_csv("projects/activism_news_gb/dataframe_just_stop_oil.csv")
 
 JSP_embeddings_titl <- read.csv("/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/JSOemb.csv", header = FALSE)
 
-# K means
-cluster_kmeans <- kmeans(JSP_embeddings_titl, 5)
+# K means 3
+cluster_kmeans3 <- kmeans(JSP_embeddings_titl, 3)
 
-df_just_stop_oil$cluster_kmeans <- cluster_kmeans$cluster
+df_just_stop_oil$cluster_kmeans3 <- cluster_kmeans3$cluster
 
-factoextra::fviz_cluster(cluster_kmeans,
+factoextra::fviz_cluster(cluster_kmeans3,
                          data = JSP_embeddings_titl,
                         geom = "point",
                          ellipse.type = "convex",
                          ggtheme = ggplot2::theme_bw()
 )
 
-# LDA
-# Install and load necessary packages
-install.packages("tm")
-install.packages("topicmodels")
-install.packages("tidyverse")
-install.packages("DBI")
-install.packages("RSQLite")
-install.packages("SnowballC")
+write.csv(df_just_stop_oil, file = "/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/topicsANDclusters_JSO_3.csv")
 
-library(tm)
-library(topicmodels)
-library(tidyverse)
-library(DBI)
-library(RSQLite)
-library(SnowballC)
+# K means 5
 
-# Connect to the database
-con <- dbConnect(RSQLite::SQLite(), df_just_stop_oil = "JSO.db")
+cluster_kmeans5 <- kmeans(JSP_embeddings_titl, 5)
 
-# Query the "title" column from your table
-dataforLDA <- dbGetQuery(con, "SELECT title FROM df_just_stop_oil")
+df_just_stop_oil$cluster_kmeans5 <- cluster_kmeans5$cluster
 
-# Disconnect from the database
-dbDisconnect(con)
+factoextra::fviz_cluster(cluster_kmeans5,
+                         data = JSP_embeddings_titl,
+                         geom = "point",
+                         ellipse.type = "convex",
+                         ggtheme = ggplot2::theme_bw()
+)
 
-# Convert titles to a corpus
-corpus <- Corpus(VectorSource(data$title))
-
-# Text preprocessing
-corpus <- tm_map(corpus, content_transformer(tolower))
-corpus <- tm_map(corpus, removePunctuation)
-corpus <- tm_map(corpus, removeNumbers)
-corpus <- tm_map(corpus, removeWords, stopwords("english"))
-corpus <- tm_map(corpus, stripWhitespace)
-corpus <- tm_map(corpus, stemDocument)
-
-# Create a Document-Term Matrix
-dtm <- DocumentTermMatrix(corpus)
-
-# Remove sparse terms
-dtm <- removeSparseTerms(dtm, 0.99)
-
-# Set the number of topics
-num_topics <- 5
-
-# Run LDA
-lda_model <- LDA(dtm, k = num_topics, control = list(seed = 1234))
-
-# Display the top terms for each topic
-topics <- terms(lda_model, 5)
-print(topics)
-
-# Get the topic distribution for each document
-topic_distribution <- as.matrix(posterior(lda_model)$topics)
-
-# Print the topic distribution for the first few documents
-head(topic_distribution)
+write.csv(df_just_stop_oil, file = "/Users/ilaria.vitulano/Documents/Weizenbaum/Learning/SICSS/SICSS_2024/projects/activism_news_gb/topicsANDclusters_JSO_5.csv")

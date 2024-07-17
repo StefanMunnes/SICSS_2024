@@ -1,0 +1,270 @@
+---
+title: "analysis"
+format: html
+editor: visual
+---
+
+## Import libraries
+
+```{r}
+#install.packages("textdata")
+library(dplyr)
+library(ggplot2)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(tidytext)
+library(tm)
+library(quanteda.sentiment)
+library(textdata)
+```
+
+## Import dataframes
+
+```{r}
+# Import the CSV file
+df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+bbc_df <- read.csv("bbc_df_clean.csv")
+bbc_df <- bbc_df %>%
+  filter(just_stop_oil == 1) %>%
+  select(-just_stop_oil, -author)
+
+activism_news <- bind_rows(
+  list("jos" = df_just_stop_oil, "bbc" = bbc_df),
+  .id = "source"
+)
+```
+
+## Bag-of-words for JSO 
+
+```{r}
+
+#### for jso ####
+corpus_jso <- corpus(df_just_stop_oil, text_field = "body") 
+tokens_jso <- tokens(corpus_jso, what = "word")
+dfm_jso <- dfm(tokens_jso)
+
+# pre-processing tokens
+jso_tokens_pp <- tokens(
+    corpus_jso,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+#  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+jso_dfmPP <- dfm(jso_tokens_pp)
+
+# top 10 dfm features
+jso_top10 <- topfeatures(jso_dfmPP)
+
+# n_grams with just + 2 words
+kwic(jso_tokens_pp, "oil", window = 3)
+
+# collocations with 3 words
+jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
+
+```
+
+## For BBC 
+
+```{r}
+
+#for bbc 
+corpus_bbc <- corpus(bbc_df, text_field = "body") 
+tokens_bbc <- tokens(corpus_bbc, what = "word")
+dfm_bbc <- dfm(tokens_bbc)
+
+# pre-processing tokens
+bbc_tokens_pp <- tokens(
+    corpus_bbc,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+ # tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+bbc_dfmPP <- dfm(bbc_tokens_pp)
+
+# top 10 dfm features
+bbc_top10 <- topfeatures(bbc_dfmPP)
+bbc_top10
+
+# n_grams with just + 2 words
+kwic(bbc_tokens_pp, "oil", window = 3)
+
+# collocations with 3 words
+bbc_threeword <- textstat_collocations(bbc_tokens_pp, size = 3, )
+
+```
+
+## For both data sources 
+
+```{r}
+#for all sources 
+
+corpus_all <- corpus(activism_news, text_field = "body") 
+tokens_all <- tokens(corpus_all, what = "word")
+dfm_all <- dfm(tokens_all)
+
+# pre-processing tokens
+all_tokens_pp <- tokens(
+    corpus_jso,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+#  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+all_dfmPP <- dfm(all_tokens_pp)
+
+# top 10 dfm features
+all_top10 <- topfeatures(all_dfmPP)
+
+# n_grams with just + 2 words
+kwic(all_tokens_pp, "oil", window = 3)
+
+# collocations with 3 words
+all_threeword <- textstat_collocations(all_tokens_pp, size = 3, )
+```
+
+## 
+
+```{}
+```
+
+## Co-occurence matrix
+
+```{r}
+jso_fcm_pp <- fcm(jso_tokens_pp, context = "window", count = "frequency", window = 3)
+# fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
+dim(fcm_pp)
+
+fcm_pp_subset <- fcm_select(jso_fcm_pp, names(topfeatures(dfm_matrix, 30)))
+
+textplot_network(fcm_pp_subset)
+```
+
+```{r}
+
+bbc_fcm_pp <- fcm(bbc_tokens_pp, context = "window", count = "frequency", window = 3)
+# fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
+#dim(bbc_pp)
+
+bbc_fcm_pp_subset <- fcm_select(bbc_fcm_pp, names(topfeatures(dfm_matrix, 30)))
+
+textplot_network(bbc_fcm_pp_subset)
+```
+
+```{r}
+
+all_fcm_pp <- fcm(all_tokens_pp, context = "window", count = "frequency", window = 3)
+# fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
+#dim(bbc_pp)
+
+all_fcm_pp_subset <- fcm_select(all_fcm_pp, names(topfeatures(dfm_matrix, 30)))
+
+textplot_network(all_fcm_pp_subset)
+```
+
+# Keyness Analysis 
+
+Keyness analysis identifies the features that are statistically significant in distinguishing between the target and reference groups. Here, it looks for terms that are more or less prevalent in documents where `just_stop_oil` is "0" compared to documents where it is not "0".
+
+```{r}
+
+textstat_keyness(all_dfmPP, target = docvars(corpus_bbc, "source") == "jso") |>
+  textplot_keyness()
+```
+
+```{r}
+
+textstat_keyness(bbc_dfmPP, target = docvars(corpus_bbc, "just_stop_oil") == "1") |>
+  textplot_keyness()
+```
+
+```{r}
+
+# comparison_date <- as.Date("2024-01-01")
+# 
+# # Create a logical vector for the target
+# target_vector <- docvars(corpus_jso, "date") > comparison_date
+# 
+# # Perform keyness analysis
+# result <- textstat_keyness(jso_dfmPP, target = target_vector)
+# 
+# # Plot keyness
+# textplot_keyness(result)
+# keyness_plot <- textplot_keyness(result)
+```
+
+```{r}
+
+# Plot keyness with customization
+keyness_plot <- textplot_keyness(result) +
+  theme_minimal() +  
+  theme(
+    text = element_text(size = 8),        
+    axis.text.x = element_text(size = 8), 
+    axis.text.y = element_text(size = 8),  
+    legend.text = element_text(size = 8),  
+    plot.title = element_text(size = 12, face = "bold"),  
+    plot.subtitle = element_text(size = 10)  
+  ) +
+  labs(
+    title = "Keyness Plot of BBC Articles",
+    subtitle = "Comparison of Terms Before and After January 2024",
+    x = "Keyness",  
+    y = "Terms"     
+  ) +
+  scale_color_manual(values = c("springgreen4", "orange3"), ,
+    labels = c("Before January 2024", "After January 2024") 
+  ) 
+
+
+# Print the customized plot
+print(keyness_plot)
+```
+
+```{r}
+
+head(data_dictionary_HuLiu)
+head(data_dictionary_LSD2015)
+lapply(valence(data_dictionary_AFINN), head, 10)
+lapply(valence(data_dictionary_ANEW), head, 10)
+
+
+dict_pol <- data_dictionary_HuLiu
+
+dfm_lookup(bbc_dfmPP, dict_pol)
+
+polarity <- textstat_polarity(bbc_dfmPP, dict_pol)
+
+```
+
+# Topic models analysis
+
+Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
+
+```{r}
+tmod_lda <- textmodel_lda(bbc_dfmPP[1:700, ], k = 5)
+
+terms(tmod_lda, 10)
+
+topics(tmod_lda)
+```

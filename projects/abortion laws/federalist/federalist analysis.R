@@ -7,7 +7,9 @@ library(seededlda)
 library(quanteda.textmodels)
 
 data_fed <- read.csv("~/SICSS/SICSS_2024/projects/abortion laws/federalist/Federalist_article_data.csv")
-data_fed$doc_id <- paste0("text",1:492)
+data_fed <- data_fed[!is.na(data_fed$gender), ]
+write.csv(data_fed,"~/SICSS/SICSS_2024/projects/abortion laws/federalist/Federalist_article_data.csv")
+#data_fed <- na.omit(data_fed)
 
 corpus <- corpus(data_fed,text_field = "final_text")
 head(summary(corpus))
@@ -33,14 +35,14 @@ dim(dfm_pp)
 textstat_frequency(dfm_pp, n = 20)
 fed_topfeat <- topfeatures(dfm_pp,n=15)
 
-dfm_pp <- dfm_trim(dfm_pp, min_termfreq = 2, termfreq_type = "count")
-dim(dfm_pp)
+#dfm_pp <- dfm_trim(dfm_pp, min_termfreq = 2, termfreq_type = "count")
+#dim(dfm_pp)
 
 fed_collocations <- textstat_collocations(tokens_pp) |>
   head(15)
 write.csv(fed_collocations,"~/SICSS/SICSS_2024/projects/abortion laws/federalist/fed_collocations.csv")
 
-## Feature-Coocurrence-Matrix
+#Feature-Coocurrence-Matrix------------------
 fcm_pp <- fcm(tokens_pp, context = "window", count = "frequency", window = 3)
 # fcm_pp <- fcm(dfm_pp, context = "document", count = "frequency")
 dim(fcm_pp)
@@ -48,6 +50,10 @@ dim(fcm_pp)
 fcm_pp_subset <- fcm_select(fcm_pp, names(topfeatures(dfm_pp, 20)))
 
 textplot_network(fcm_pp_subset)
+
+# KEYNESS-------------------
+textstat_keyness(dfm_pp, target = docvars(corpus, "gender") == "female") %>%
+textplot_keyness()
 
 ##Sentiment-------------------------------------------
 head(data_dictionary_HuLiu)
@@ -85,3 +91,5 @@ average_scores <- data_fed_polarity %>%
 
 write.csv(average_scores,"~/SICSS/SICSS_2024/projects/abortion laws/federalist/ave_sent_score_by_gen.csv")
 write.csv(data_fed_polarity,"~/SICSS/SICSS_2024/projects/abortion laws/federalist/data_fed_polarity.csv")
+
+

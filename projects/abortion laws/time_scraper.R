@@ -28,7 +28,7 @@ get_all_articles <- function(url) {
       html_text(),
     
     author = website %>%
-      html_nodes(".inline-block a.font-bold, #article-body .font-bold") %>%
+      html_nodes(xpath=".inline-block a.font-bold, #article-body .font-bold") %>%
       html_text() %>%
       paste(collapse = ";"),
     
