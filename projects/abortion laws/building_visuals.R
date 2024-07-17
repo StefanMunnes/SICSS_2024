@@ -176,9 +176,9 @@ textstat_collocations(test_f) %>%
   head(15)
 
 # Topic Model
-tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 3)
-terms(tmod_lda, 8)
-topics(tmod_lda)
+tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 4)
+terms(tmod_lda, 5)
+#topics(tmod_lda)
 
 # Testing stuff
 #textstat_keyness(dfmat_source, target = docvars(corpus, "gender") == "male") %>%
