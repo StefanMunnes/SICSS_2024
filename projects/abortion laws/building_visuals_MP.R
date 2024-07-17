@@ -15,7 +15,7 @@ library(svglite)
 #########################################################################
 
 # read in articles
-source <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
+source <- read.csv("~/SICSS/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
 head(source)
 
 # clean row "author"
@@ -176,9 +176,9 @@ textstat_collocations(test_f) %>%
   head(15)
 
 # Topic Model
-tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 3)
-terms(tmod_lda, 8)
-topics(tmod_lda)
+tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 4)
+terms(tmod_lda, 5)
+#topics(tmod_lda)
 
 # Testing stuff
 #textstat_keyness(dfmat_source, target = docvars(corpus, "gender") == "male") %>%
