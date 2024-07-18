@@ -1,0 +1,82 @@
+---
+title: "BBC_Processing"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(tidytext)
+library(tm)
+library(quanteda.sentiment)
+```
+
+```{r}
+# Import the CSV files
+df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+df_bbc <- read.csv("pp_bbc_df.csv")
+
+# Brief statistics bbc
+# Assuming your dataframe is named df
+df_bbc %>%
+  count(just_stop_oil)
+
+string_remove <- c(
+  "Copyright \\d{4}.*",
+  "(F|f)ollow Essex.*",
+  "BBC. All rights reserved.  The BBC is not responsible for the content of external sites. Read about our approach to external linking.",
+  "Listen to the best of.*",
+  "All photographs subject to copyright Follow BBC Yorkshire on Facebook, Twitter and Instagram.",
+  "BBC. All rights reserved.  The BBC is not responsible for the content of external sites. Read about our approach to external linking.",
+  "Follow Northamptonshire news on.*",
+  "Follow BBC (Wiltshire|Yorkshire|South) .*",
+  "Follow Suffolk.*",
+  "Why not follow BBC Isle.*",
+  "Follow us on Twitter.*"
+)
+
+# Remove news in pictures elements
+df_bbc <- df_bbc[!grepl("news/in-pictures", df_bbc$url), ]
+
+for (string_i in string_remove) {
+  df_bbc$body <- str_replace_all(df_bbc$body, string_i, "")
+}
+
+corpus_bbc <- corpus(df_bbc, text_field = "body") 
+tokens_bbc <- tokens(corpus_bbc, what = "word")
+dfm_bbc <- dfm(tokens_bbc)
+# pre-processing tokens
+bbc_tokens_pp <- tokens(
+    corpus_bbc,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+bbc_dfmPP <- dfm(bbc_tokens_pp)
+
+# collocations with 3 words
+bbc_threeword <- textstat_collocations(bbc_tokens_pp, size = 3, )
+
+# Export the dataframe as a CSV file
+write.csv(df_bbc, "bbc_df_clean.csv", row.names = FALSE)
+```

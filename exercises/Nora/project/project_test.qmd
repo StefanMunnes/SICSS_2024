@@ -1,0 +1,66 @@
+```{python}
+```
+
+
+```{python}
+import bbc
+import datetime
+#from .languages import Languages
+from bbc import news
+from bbc import exceptions
+
+```
+
+```{r}
+
+file.edit("~/.Renviron")
+
+Sys.getenv("newsapi_key")
+
+```
+```{r}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+```
+
+```{r}
+
+httr_headlines <- GET("https://newsapi.org/v2/top-headlines/sources",
+                      query = list(q= "just stop oil", country = "gb",
+                                   apiKey = Sys.getenv("newsapi_key")))
+
+
+# Extract the contents as JSON format/lists
+#headlines <- content(httr_headlines, type='application/json', flatten = TRUE)
+
+head3 <- fromJSON(content(httr_headlines, 
+                             as = "text", 
+                             encoding = "UTF-8"), 
+                     flatten = TRUE)
+
+article <- head3$articles
+
+headlines1 <- content(httr_headlines, as="text")
+fromJSON(headlines1) -> new
+
+sources <- head(new$articles$source)
+
+headlines <- content(httr_headlines, type='application/json', flatten = TRUE)$articles
+
+headlines <- content(httr_headlines, type='application/json', flatten = TRUE)$sources
+
+head2 <- content(httr_headlines, as = "parsed", type = "application/json")
+#explicit convertion to data frame
+dataFrame <- data.frame(head2)
+
+```
+
+```{r}
+
+
+
+```
+
+
+

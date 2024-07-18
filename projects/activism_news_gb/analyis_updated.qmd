@@ -1,0 +1,474 @@
+---
+title: "analysis"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Import libraries
+
+```{r}
+#install.packages("textdata")
+library(dplyr)
+library(ggplot2)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(tidytext)
+library(tm)
+library(quanteda.sentiment)
+```
+
+## Import dataframes
+
+```{r}
+# Import the CSV files
+df_just_stop_oil <- read.csv("dataframe_just_stop_oil.csv")
+#df_bbc <- read.csv("pp_bbc_df.csv")
+df_bbc <- read.csv("bbc_df_clean.csv")
+
+# Brief statistics bbc
+# Assuming your dataframe is named df
+df_bbc %>%
+  count(just_stop_oil)
+
+# Create a dataframe with rows where just_stop_oil is 1
+df_bbc_jso <- subset(df_bbc, just_stop_oil == 1)
+
+# Create a dataframe with rows where just_stop_oil is 0
+df_bbc_bench <- subset(df_bbc, just_stop_oil == 0)
+```
+
+## Bag-of-words
+
+```{r}
+#### for body ####
+corpus_jso <- corpus(df_just_stop_oil, text_field = "body") 
+tokens_jso <- tokens(corpus_jso, what = "word")
+dfm_jso <- dfm(tokens_jso)
+
+corpus_bbc_jso <- corpus(df_bbc_jso, text_field = "body") 
+tokens_bbc_jso <- tokens(corpus_bbc_jso, what = "word")
+dfm_bbc_jso <- dfm(tokens_bbc_jso)
+
+corpus_bbc_bench <- corpus(df_bbc_bench, text_field = "body") 
+tokens_bbc_bench <- tokens(corpus_bbc_bench, what = "word")
+dfm_bbc_bench <- dfm(tokens_bbc_bench)
+
+corpus_bbc <- corpus(df_bbc, text_field = "body") 
+tokens_bbc <- tokens(corpus_bbc, what = "word")
+dfm_bbc <- dfm(tokens_bbc)
+# pre-processing tokens
+jso_tokens_pp <- tokens(
+    corpus_jso,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+bbc_tokens_pp <- tokens(
+    corpus_bbc,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+bbc_jso_tokens_pp <- tokens(
+    corpus_bbc_jso,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+bbc_bench_tokens_pp <- tokens(
+    corpus_bbc_bench,
+    what = "word",
+    remove_punct = TRUE,
+    remove_symbols = TRUE,
+    remove_numbers = TRUE,
+    remove_separators = TRUE
+  ) |>
+  tokens_tolower() |>
+  tokens_wordstem(language = "en") |>
+  tokens_remove(stopwords("en"), padding = FALSE)
+
+# dfm of pp tokens 
+jso_dfmPP <- dfm(jso_tokens_pp)
+bbc_dfmPP <- dfm(bbc_tokens_pp)
+bbc_jso_dfmPP <- dfm(bbc_jso_tokens_pp)
+bbc_bench_dfmPP <- dfm(bbc_bench_tokens_pp)
+# top 10 dfm features
+jso_top10 <- topfeatures(jso_dfmPP)
+bbc_jso_top10 <- topfeatures(bbc_jso_dfmPP)
+bbc_bench_top10 <- topfeatures(bbc_bench_dfmPP)
+
+# n_grams with just + 2 words
+kwic(jso_tokens_pp, "oil", window = 3)
+
+# collocations with 3 words
+jso_threeword <- textstat_collocations(jso_tokens_pp, size = 3, )
+bbc_jso_threeword <- textstat_collocations(bbc_jso_tokens_pp, size = 3, )
+bbc_threeword <- textstat_collocations(bbc_tokens_pp, size = 3, )
+bbc_bench_threeword <- textstat_collocations(bbc_bench_tokens_pp, size = 3, )
+```
+
+## Sentiment analysis JSO
+
+```{r}
+dict_pol <- data_dictionary_HuLiu
+sentiment_jso <- dfm_lookup(jso_dfmPP, dict_pol)
+textstat_polarity(jso_dfmPP, dict_pol)
+textstat_valence(jso_dfmPP, data_dictionary_AFINN)
+```
+
+## Sentiment analysis BBC
+
+```{r}
+sentiment_bbc_jso <- dfm_lookup(bbc_dfmPP, dict_pol)
+textstat_polarity(bbc_jso_dfmPP, dict_pol)
+textstat_valence(bbc_dfmPP, data_dictionary_AFINN)
+
+sentiment_bbc_bench <- dfm_lookup(bbc_dfmPP, dict_pol)
+textstat_polarity(bbc_bench_dfmPP, dict_pol)
+textstat_valence(bbc_dfmPP, data_dictionary_AFINN)
+```
+
+```{r}
+#df_jso <- dfm(jso_tokens_pp) %>% convert(to = "data.frame")
+
+dfm_matrix_jso <- dfm(jso_tokens_pp)
+dfm_matrix_bbc_jso <- dfm(bbc_jso_tokens_pp)
+dfm_matrix_bbc_bench <- dfm(bbc_bench_tokens_pp)
+
+# Convert the dfm to a tidy format
+tidy_df_jso <- tidy(dfm_matrix_jso)
+tidy_df_bbc_jso <- tidy(dfm_matrix_bbc_jso)
+tidy_df_bbc_bench <- tidy(dfm_matrix_bbc_bench)
+
+# Get different lexica
+sentiment_lexicon <- get_sentiments("bing")
+
+# Join with the tokenized words and calculate sentiment scores
+sentiment_df_jso <- tidy_df_jso %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+
+sentiment_df_bbc_jso <- tidy_df_bbc_jso %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+
+sentiment_df_bbc_bench <- tidy_df_bbc_bench %>%
+  inner_join(sentiment_lexicon, by = c("term" = "word")) %>%
+  group_by(document) %>%
+  summarize(sentiment = sum(sentiment == "positive") - sum(sentiment == "negative")) 
+```
+
+```{r}
+# Plot histogram of sentiment scores
+ggplot(sentiment_df_jso, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
+
+ggplot(sentiment_df_bbc_bench, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
+```
+
+```{r}
+# Calculate the mean and standard deviation of the sentiment scores
+mean_sentiment_jso <- mean(sentiment_df_jso$sentiment, na.rm = TRUE)
+sd_sentiment_jso <- sd(sentiment_df_jso$sentiment, na.rm = TRUE)
+mean_sentiment_bbc_jso <- mean(sentiment_df_bbc_jso$sentiment, na.rm = TRUE)
+sd_sentiment_bbc_jso <- sd(sentiment_df_bbc_jso$sentiment, na.rm = TRUE)
+mean_sentiment_bbc_bench <- mean(sentiment_df_bbc_bench$sentiment, na.rm = TRUE)
+sd_sentiment_bbc_bench <- sd(sentiment_df_bbc_bench$sentiment, na.rm = TRUE)
+```
+
+```{r}
+# Add a source column to distinguish the datasets
+sentiment_df_jso$source <- "Just Stop Oil"
+sentiment_df_bbc_jso$source <- "BBC - Just Stop Oil"
+sentiment_df_bbc_bench$source <- "BBC - Bench"
+
+# Combine the data frames
+combined_sentiment_df <- rbind(sentiment_df_jso, sentiment_df_bbc_jso, sentiment_df_bbc_bench)
+
+# Plot using facets
+ggplot(combined_sentiment_df, aes(x = sentiment)) +
+  geom_histogram(data = subset(combined_sentiment_df, source == "Just Stop Oil"),
+                 binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_histogram(data = subset(combined_sentiment_df, source == "BBC - Just Stop Oil"),
+                 binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  geom_histogram(data = subset(combined_sentiment_df, source == "BBC - Bench"),
+                 binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
+  facet_wrap(~ source, ncol = 1) +  # Create facets based on the source column
+  theme_minimal() +
+  labs(title = "Distribution of Sentiment Scores for Just Stop Oil Protests Articles",
+       x = "Sentiment Score",
+       y = "Number of Articles")
+
+```
+
+```{r}
+# Plot for Just Stop Oil
+library(gridExtra)
+
+# Determine the common xlim for all plots centered around 0
+max_abs_sentiment <- max(abs(c(
+  min(sentiment_df_jso$sentiment),
+  max(sentiment_df_jso$sentiment),
+  min(sentiment_df_bbc_jso$sentiment),
+  max(sentiment_df_bbc_jso$sentiment),
+  min(sentiment_df_bbc_bench$sentiment),
+  max(sentiment_df_bbc_bench$sentiment)
+)))
+
+global_xlim <- c(-max_abs_sentiment, max_abs_sentiment)
+
+# Plot for Just Stop Oil
+plot_jso <- ggplot(sentiment_df_jso, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_sentiment_jso), color = "black", linetype = "solid", size = 1.5) +
+  theme_minimal() +
+  labs(title = "Just Stop Oil",
+       x = "",
+       y = "") +
+  xlim(global_xlim)
+
+# Plot for BBC - Just Stop Oil
+plot_bbc_jso <- ggplot(sentiment_df_bbc_jso, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_sentiment_bbc_jso), color = "black", linetype = "solid", size = 1.5) +
+  theme_minimal() +
+  labs(title = "BBC - Just Stop Oil",
+       x = "",
+       y = "Number of Articles") +
+  xlim(global_xlim)
+
+# Plot for BBC - Bench
+plot_bbc_bench <- ggplot(sentiment_df_bbc_bench, aes(x = sentiment)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_sentiment_bbc_bench), color = "black", linetype = "solid", size = 1.5) +
+  theme_minimal() +
+  labs(title = "BBC - Bench",
+       x = "Sentiment Score",
+       y = "") +
+  xlim(global_xlim)
+
+# Arrange the plots in a single figure
+grid.arrange(plot_jso, plot_bbc_jso, plot_bbc_bench, ncol = 1)
+```
+
+## Co-occurence matrix
+
+```{r}
+jso_fcm_pp <- fcm(jso_tokens_pp, context = "window", count = "frequency", window = 3)
+bbc_jso_fcm_pp <- fcm(bbc_jso_tokens_pp, context = "window", count = "frequency", window = 3)
+bbc_bench_fcm_pp <- fcm(bbc_bench_tokens_pp, context = "window", count = "frequency", window = 3)
+bbc_fcm_pp <- fcm(bbc_tokens_pp, context = "window", count = "frequency", window = 3)
+
+
+fcm_pp_subset_jso <- fcm_select(jso_fcm_pp, names(topfeatures(dfm_matrix_jso, 30)))
+fcm_pp_subset_bbc_jso <- fcm_select(bbc_jso_fcm_pp, names(topfeatures(dfm_matrix_bbc_jso, 30)))
+fcm_pp_subset_bbc_bench <- fcm_select(bbc_bench_fcm_pp, names(topfeatures(dfm_matrix_bbc_bench, 30)))
+fcm_pp_subset_bbc <- fcm_select(bbc_fcm_pp, names(topfeatures(dfm_matrix_bbc_bench, 30)))
+
+#textplot_network(fcm_pp_subset, edge_color = "skyblue")
+textplot_network(fcm_pp_subset_bbc_jso, edge_color = "blue")
+textplot_network(fcm_pp_subset_bbc_bench, edge_color = "green")
+textplot_network(fcm_pp_subset_bbc, edge_color = "red")
+
+# gsub regex, split
+```
+
+## Topic modelling via kmeans clustering and OpenAI prompt
+
+### JSO dataset - 5 clusters
+
+```{r}
+df_jso_clusters5 <- read.csv("topicsANDclusters_JSO_5.csv")
+
+# Extract titles based on k_means values
+titles_cluster_1 <- df_jso_clusters5 %>% filter(cluster_kmeans == 1) %>% select(title)
+titles_cluster_2 <- df_jso_clusters5 %>% filter(cluster_kmeans == 2) %>% select(title)
+titles_cluster_3 <- df_jso_clusters5 %>% filter(cluster_kmeans == 3) %>% select(title)
+titles_cluster_4 <- df_jso_clusters5 %>% filter(cluster_kmeans == 4) %>% select(title)
+titles_cluster_5 <- df_jso_clusters5 %>% filter(cluster_kmeans == 5) %>% select(title)
+
+# Prompting with ChatGPT-4o
+jso_5_tit1 <- "Student Protests"
+jso_5_tit2 <- "Civil Resistance and Public Appeals"
+jso_5_tit3 <- "Protests and Statements"
+jso_5_tit4 <- "Legal Battles"
+jso_5_tit5 <- "Trials and Legal Proceedings"
+```
+
+```{r}
+# Manually define labels for each type
+labels1 <- c(jso_5_tit1, jso_5_tit2, jso_5_tit3, jso_5_tit4, jso_5_tit5)
+
+# Count the number of articles for each type
+article_counts <- df_jso_clusters5 %>%
+  count(cluster_kmeans5) 
+
+
+# Reorder cluster_kmeans5 based on the number of articles (n)
+article_counts <- article_counts %>%
+  mutate(cluster_kmeans5 = factor(cluster_kmeans5, levels = cluster_kmeans5[order(-n)]))
+
+# Create bar chart with horizontal bars
+ggplot(article_counts, aes(y = cluster_kmeans5, x = n)) +
+  geom_bar(stat = "identity", fill = "skyblue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "JSO Topic Overview") +
+  scale_y_discrete(labels = labels1) +  # Use manual labels
+  theme_minimal()
+```
+
+### JSO dataset - 3 clusters
+
+```{r}
+df_jso_clusters3 <- read.csv("topicsANDclusters_JSO_3.csv")
+
+# Extract titles based on k_means values
+titles_cluster_21 <- df_jso_clusters3 %>% filter(cluster_kmeans == 1) %>% select(title)
+titles_cluster_22 <- df_jso_clusters3 %>% filter(cluster_kmeans == 2) %>% select(title)
+titles_cluster_23 <- df_jso_clusters3 %>% filter(cluster_kmeans == 3) %>% select(title)
+
+# Prompting with ChatGPT-4
+jso_3_tit1 <- "Legal Challenges and Activist Actions" 
+jso_3_tit2 <- "Wide-ranging Activism and Advocacy Efforts" 
+jso_3_tit3 <- "Legal Challenges and Activism Against Repressive Laws"
+
+```
+
+```{r}
+# Manually define labels for each type
+labels2 <- c(jso_3_tit1, jso_3_tit2, jso_3_tit3)
+
+# Count the number of articles for each type
+article_counts2 <- df_jso_clusters3 %>%
+  count(cluster_kmeans3) 
+
+
+# Reorder cluster_kmeans5 based on the number of articles (n)
+article_counts2 <- article_counts2 %>%
+  mutate(cluster_kmeans3 = factor(cluster_kmeans3, levels = cluster_kmeans3[order(-n)]))
+
+# Create bar chart with horizontal bars
+
+ggplot(article_counts2, aes(y = cluster_kmeans3, x = n)) +
+  geom_bar(stat = "identity", fill = "skyblue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "JSO Topic Overview") +
+  scale_y_discrete(labels = labels2) +  # Use manual labels
+  theme_minimal()
+```
+
+### BBC dataset - 5 clusters
+
+```{r}
+df_bbc_clusters5 <- read.csv("topicsANDclusters_BBC_5.csv")
+
+# Extract titles based on k_means values
+titles_cluster_bbc_1 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 1) %>% select(title)
+titles_cluster_bbc_2 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 2) %>% select(title)
+titles_cluster_bbc_3 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 3) %>% select(title)
+titles_cluster_bbc_4 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 4) %>% select(title)
+titles_cluster_bbc_5 <- df_bbc_clusters5 %>% filter(cluster_kmeans5 == 5) %>% select(title)
+
+# Prompting with ChatGPT-4o
+bbc_5_tit1 <- "Current Affairs and Events"
+bbc_5_tit2 <- "Protests and Acts of Civil Disobedience"
+bbc_5_tit3 <- "Protests and Civil Disobedience Actions"
+bbc_5_tit4 <- "Protests and Legal Issues" 
+#bbc_5_tit4 <- "Protests and Legal Issues Involving Just Stop Oil Activists" 
+#bbc_5_tit5 <- "Recent Developments in Protests, Elections, and Legal Challenges"
+bbc_5_tit5 <- "Recent Developments in Protests and Elections"
+
+```
+
+```{r}
+# Manually define labels for each type
+labels3 <- c(bbc_5_tit1, bbc_5_tit2, bbc_5_tit3, bbc_5_tit4, bbc_5_tit5)
+
+# Count the number of articles for each type
+article_counts3 <- df_bbc_clusters5 %>%
+  count(cluster_kmeans5) 
+
+
+# Reorder cluster_kmeans5 based on the number of articles (n)
+article_counts3 <- article_counts3 %>%
+  mutate(cluster_kmeans5 = factor(cluster_kmeans5, levels = cluster_kmeans5[order(-n)]))
+
+# Create bar chart with horizontal bars
+ggplot(article_counts3, aes(y = cluster_kmeans5, x = n)) +
+  geom_bar(stat = "identity", fill = "blue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "BBC Topic Overview") +
+  scale_y_discrete(labels = labels3) +  # Use manual labels
+  theme_minimal()
+```
+
+### BBC dataset - 3 clusters
+
+```{r}
+df_bbc_clusters3 <- read.csv("topicsANDclusters_BBC_3.csv")
+
+# Extract titles based on k_means values
+titles_cluster_bbc_21 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 1) %>% select(title)
+titles_cluster_bbc_22 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 2) %>% select(title)
+titles_cluster_bbc_23 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 3) %>% select(title)
+
+# Prompting with ChatGPT-4o
+bbc_3_tit1 <- "Social Impact of Just Stop Oil Protests"
+bbc_3_tit2 <- "Protests and Legal Challenges in Various Public and Political Settings"
+bbc_3_tit3 <- "Protests, Controversies, and Cultural Highlights"
+```
+
+```{r}
+# Manually define labels for each type
+labels4 <- c(bbc_3_tit1, bbc_3_tit2, bbc_3_tit3)
+
+# Count the number of articles for each type
+article_counts4 <- df_bbc_clusters3 %>%
+  count(cluster_kmeans3) 
+
+# Reorder cluster_kmeans3 based on the number of articles (n)
+article_counts4 <- article_counts4 %>%
+  mutate(cluster_kmeans3 = factor(cluster_kmeans3, levels = cluster_kmeans3[order(-n)]))
+
+# Create bar chart with horizontal bars
+ggplot(article_counts4, aes(y = cluster_kmeans3, x = n)) +
+  geom_bar(stat = "identity", fill = "blue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "BBC - JSO Topic Overview") +
+  scale_y_discrete(labels = labels4) +  # Use manual labels
+  theme_minimal()
+```

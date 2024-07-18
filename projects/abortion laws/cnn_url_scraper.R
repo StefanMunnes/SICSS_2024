@@ -45,6 +45,7 @@ searchbox$clickElement()
 # Write search term
 searchbox$sendKeysToElement(list('\"Abortion\"', key = "enter"))
 
+Sys.sleep(2)
 # Limit search to stories
 remDr$findElement(using = "xpath", "//label[@for='collection_article']")$clickElement() 
 
@@ -62,8 +63,8 @@ while (TRUE) {
   urls <- c(urls, new_urls[!new_urls %in% urls])
   
   # Stop at 2000 URLs
-  if (length(urls) > 1000) {
-    print("Limit of 1000 URLs reached")
+  if (length(urls) > 2100) {
+    print("Limit of 2000 URLs reached")
     break
   }
   
@@ -96,7 +97,7 @@ while (TRUE) {
 }
 
 # save URLs
-write.csv(urls, "~/SICSS_2024/projects/abortion laws/cnn_urls.csv")
+write.csv(urls, "~/SICSS_2024/projects/abortion laws/cnn_urls2.csv")
 
 # close server
 remote_driver$server$stop()

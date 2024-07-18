@@ -14,11 +14,13 @@ execute:
   error: false
 ---
 
-
 # Preparation
 
 Packages you will (probably) need:
+
 ```{r}
+library(remotes)
+install_github("quanteda/quanteda.sentiment")
 library(dplyr)
 library(quanteda)
 library(quanteda.sentiment)
@@ -28,46 +30,60 @@ library(quanteda.textmodels)
 
 Use the script from exercise 1 to get all the necessary objects for the analysis
 
-
 # Perform a sentiment analysis
 
 Get a dictionary from the quanteda.sentiment package and calculate the polarity (or valence) sentiment for each document:
+
 ```{r}
+# polarity
+dict_pol <- data_dictionary_HuLiu
+dfm_lookup(dfm_pp, dict_pol)
 
+# valence
+textstat_polarity(dfm_pp, dict_pol)
+textstat_valence(dfm_pp, data_dictionary_AFINN)
 ```
-
 
 # Perform a topic models analysis
 
 Use the quantda.texmodel function for a explorativ approach or define some seeds if you expect some topics with seeded lda:
-```{r}
 
+```{r}
+tmod_lda <- textmodel_lda(dfm_pp, k = 5)
+
+terms(tmod_lda, 20)
+
+topics(tmod_lda)
 ```
 
-
-# **Bonus**: Train your own naive bayes classifier for sentiment 
+# **Bonus**: Train your own naive bayes classifier for sentiment
 
 Get a training set from the labeled data and define classes:
+
 ```{r}
 
 ```
 
 Train the model with the training data and classes:
+
 ```{r}
 
 ```
 
 Get (unlabelled) test data:
+
 ```{r}
 
 ```
 
 Predict class for test data with trained model:
+
 ```{r}
 
 ```
 
 Create a simple confusion matrix to check prediction accuracy:
+
 ```{r}
 
 ```
