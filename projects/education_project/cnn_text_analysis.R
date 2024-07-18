@@ -6,6 +6,7 @@ library(quanteda)
 library(quanteda.textstats)
 library(quanteda.textplots)
 
+library(plotly)
 library(tidyverse)
 library(lubridate)
 library(stringr)
@@ -35,12 +36,12 @@ reticulate::py_install(c("torch", "sentencepiece"), pip = TRUE)
 transformers <- reticulate::import("transformers")
 
 
-sentiment_pipeline <- transformers$pipeline("sentiment-analysis", model = "ahmedrachid/FinancialBERT-Sentiment-Analysis")
+sentiment_pipeline <- transformers$pipeline("sentiment-analysis", model = "mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
 
 #load data
 cnn_data <- read.xlsx("projects/education_project/data/cnn_edineq_df_clean.xlsx", 1)
 
-titles_sentiment_ls <- sentiment_pipeline(cnn_data$title)
+body_sentiment_cnn_ls <- sentiment_pipeline(cnn_data$body)
 
 
 # titles_sentiment
@@ -345,8 +346,53 @@ head(dfm_3_pp_fox)
 textstat_keyness(dfm_fox, target = docvars(corpus_fox, "cluster_kmeans") == "3") |>
   textplot_keyness()
 
-
+fox_data <- as.data.frame(fox_data)
 write.xlsx(fox_data, "projects/education_project/data/fox_clusters.xlsx")
 write.xlsx(cnn_data, "projects/education_project/data/cnn_clusters.xlsx")
 
 #hierarchical clustering
+bodies_distance_cnn <- proxy::dist(bodies_embeddings, method = "cosine")
+
+hcluster <- hclust(bodies_distance_cnn)
+
+cnn_data$cluster_hier <- cutree(hcluster, k = 5)
+
+pca_result <- prcomp(bodies_embeddings, scale. = TRUE)
+pca_data <- as.data.frame(pca_result$x)
+pca_data$cluster <- as.factor(cnn_data$cluster_hier)
+
+ggplot(pca_data, aes(x = PC1, y = PC2, color = cluster)) +
+  geom_point(size = 2) +
+  labs(title = "PCA of Sentence Embeddings with Hierarchical Clustering",
+       x = "Principal Component 1",
+       y = "Principal Component 2") +
+  theme_minimal() +
+  scale_color_manual(values = c("red", "blue", "green", "purple", "orange"))
+
+
+
+#hclust for fox
+bodies_distance_fox <- proxy::dist(bodies_embeddings_fox, method = "cosine")
+
+hcluster <- hclust(bodies_distance_fox)
+
+fox_data$cluster_hier <- cutree(hcluster, k = 5)
+
+pca_result <- prcomp(bodies_embeddings_fox, scale. = TRUE)
+pca_data <- as.data.frame(pca_result$x)
+pca_data$cluster <- as.factor(fox_data$cluster_hier)
+
+ggplot(pca_data, aes(x = PC1, y = PC2, color = cluster)) +
+  geom_point(size = 2) +
+  labs(title = "PCA of Sentence Embeddings with Hierarchical Clustering",
+       x = "Principal Component 1",
+       y = "Principal Component 2") +
+  theme_minimal() +
+  scale_color_manual(values = c("red", "blue", "green", "purple", "orange"))
+
+
+
+p <- plot_ly(cnn_data, x=~Sepal.Length, y=~Sepal.Width, 
+             z=~Petal.Length, color=~cluster) %>%
+  add_markers(size=1.5)
+print(p)
