@@ -329,6 +329,29 @@ jso_5_tit4 <- "Legal Battles"
 jso_5_tit5 <- "Trials and Legal Proceedings"
 ```
 
+```{r}
+# Manually define labels for each type
+labels1 <- c(jso_5_tit1, jso_5_tit2, jso_5_tit3, jso_5_tit4, jso_5_tit5)
+
+
+# Count the number of articles for each type
+article_counts <- df_jso_clusters5 %>%
+  count(cluster_kmeans5) 
+
+
+# Reorder cluster_kmeans5 based on the number of articles (n)
+article_counts <- article_counts %>%
+  mutate(cluster_kmeans5 = factor(cluster_kmeans5, levels = cluster_kmeans5[order(-n)]))
+
+# Create bar chart with horizontal bars
+ggplot(article_counts, aes(y = cluster_kmeans5, x = n)) +
+  geom_bar(stat = "identity", fill = "skyblue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "BBC Topic Overview") +
+  scale_y_discrete(labels = labels1) +  # Use manual labels
+  theme_minimal()
+```
+
 ### JSO dataset - 3 clusters
 
 ```{r}
