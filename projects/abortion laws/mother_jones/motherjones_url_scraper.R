@@ -20,6 +20,14 @@ pacman::p_load(
   ,"reticulate"
   ,"forcats"
 )
+library(dplyr)
+library(quanteda)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(quanteda.sentiment)
+library(seededlda)
+library(quanteda.textmodels)
+
 url_head <- "https://www.motherjones.com/page/"
 url_tail <- "/?s=abortion"
 search_page_urls <- tibble(urls=paste0(url_head,1:181,url_tail))
@@ -264,3 +272,4 @@ all_article_info2 <- all_article_info1 %>%
   mutate_all(~ ifelse(. == "", NA, .)) %>%
   filter(!is.na(gender) & !is.na(body))
 
+#ANALYSIS----------------------------------------------------

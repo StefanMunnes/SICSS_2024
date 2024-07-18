@@ -15,7 +15,7 @@ library(svglite)
 #########################################################################
 
 # read in articles
-source <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_abortion2.csv")
+source <- read.csv("~/SICSS/SICSS_2024/projects/abortion laws/prepared_article_data/time_abortion_MP.csv")
 head(source)
 
 # clean row "author"
@@ -51,21 +51,22 @@ source_byauthor <- source %>%
 
 # GENDER OF AUTHORS ------------------------------------------------
 
-# via gender package
-gendered <- source_byauthor %>% 
-  rowwise() %>% 
-  do(results = gender(source_byauthor$first_name, method = "ssa")) %>% 
-  do(bind_rows(.$results))
+# # via gender package
+# gendered <- source_byauthor %>% 
+#   rowwise() %>% 
+#   do(results = gender(source_byauthor$first_name, method = "ssa")) %>% 
+#   do(bind_rows(.$results))
+# 
+# # add gender info to cnn data
+# source_gender <- left_join(source_byauthor, gendered)
+# 
+# # clean data
+# source_gender <- distinct(source_gender)
+# source_gender$year_min = NULL 
+# source_gender$year_max = NULL
 
-# add gender info to cnn data
-source_gender <- left_join(source_byauthor, gendered)
 
-# clean data
-source_gender <- distinct(source_gender)
-source_gender$year_min = NULL 
-source_gender$year_max = NULL
-
-# Tokenization Source
+# Tokenization Source--------------------
 corpus <- corpus(source_gender, text_field = "body")
 
 # remove these words
@@ -99,7 +100,7 @@ dfmat_source_gender <- corpus_subset(corpus,
   dfm() |>
   dfm_group(groups = gender) |>
   dfm_trim(min_termfreq = 1000, verbose = FALSE)
-  textplot_wordcloud(dfmat_source_gender,
+textplot_wordcloud(dfmat_source_gender,
                      max_words = 150,
                      color = c("red", "blue"),
     comparison = TRUE,

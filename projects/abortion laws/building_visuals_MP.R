@@ -86,10 +86,11 @@ dfmat_source <- corpus_subset(corpus) |>
          remove_separators = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 100, verbose = FALSE)
+  dfm_trim(min_termfreq = 6000, verbose = FALSE)
 textplot_wordcloud(dfmat_source)
 
-# wordcloud gendered
+# Gendered wordcloud---------------------------
+
 dfmat_source_gender <- corpus_subset(corpus, 
                                   gender %in% c("male", "female")) |>
   tokens(what = "word",
@@ -120,7 +121,7 @@ textplot_wordcloud(dfmat_source_gender,
 #   labs(x = "Frequency", y = "Feature")
 
 #ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_1.svg", plot=last_plot())
-ggsave(filename = paste0(outlet,"_freqdiag.svg"), plot=last_plot())
+# ggsave(filename = paste0(outlet,"_freqdiag.svg"), plot=last_plot())
 
 # frequency diagramm gendered
 
@@ -132,14 +133,14 @@ ggsave(filename = paste0(outlet,"_freqdiag.svg"), plot=last_plot())
 # tstat_freq_source_female <- textstat_frequency(dfmat_source_female)
 
 
-# Gendered wordcloud---------------------------
+
 #second version
 
 dfmat_source_f <- corpus |> 
   tokens(remove_punct = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 400, verbose = FALSE) %>%
+  dfm_trim(min_termfreq = 600, verbose = FALSE) %>%
   dfm_subset(gender =="female")
 
 
@@ -147,35 +148,87 @@ dfmat_source_m <- corpus |>
   tokens(remove_punct = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 400, verbose = FALSE) %>%
+  dfm_trim(min_termfreq = 600, verbose = FALSE) %>%
   dfm_subset(gender =="male")
 
 tstat_freq_source_male2 <- textstat_frequency(dfmat_source_m)
 tstat_freq_source_female2 <- textstat_frequency(dfmat_source_f)
 
-# Plotting (for version 2 switch data to "...male2")
+# Frequency Plotting -----------------------------------------------------
+# (for version 2 switch data to "...male2")
+# ggplot() +
+#   geom_point(data = tstat_freq_source_male2,
+#              aes(x = frequency, 
+#                  y = reorder(feature, frequency),
+#                  color = "Male")) +
+#   geom_point(data = tstat_freq_source_female2, 
+#              aes(x = frequency, 
+#                  y = reorder(feature, frequency), 
+#                  color = "Female")) +
+#   scale_color_manual(values = c("Female" = "red", 
+#                                 "Male" = "blue")) +
+#   scale_x_continuous(labels = abs) +
+#   labs(x = "Frequency", 
+#        y = "Feature", 
+#        color = "Gender") +
+#   theme_minimal()+
+#   theme(legend.position = "top",
+#         axis.text.y = element_text(lineheight = 5,
+#                                    size = 5))
+# ggsave(filename = paste0(outlet,"_freqdiag_gen_ver2.svg"), plot=last_plot())
+
+# Frequency plotting update----------------------------------------------
+# Berechnung der Anzahl der Wörter pro Geschlecht
+word_count_female <- sum(ntoken(dfm_subset(dfmat_source, gender == "female")))
+word_count_male <- sum(ntoken(dfm_subset(dfmat_source, gender == "male")))
+
+# Berechnung der relativen Häufigkeit
+tstat_freq_source_female$relative_frequency <- tstat_freq_source_female$frequency / word_count_female
+tstat_freq_source_male$relative_frequency <- tstat_freq_source_male$frequency / word_count_male
+
+# Plotting der relativen Häufigkeit
 ggplot() +
-  geom_point(data = tstat_freq_source_male2,
-             aes(x = frequency, 
-                 y = reorder(feature, frequency),
+  geom_point(data = tstat_freq_source_male,
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency),
                  color = "Male")) +
-  geom_point(data = tstat_freq_source_female2, 
-             aes(x = frequency, 
-                 y = reorder(feature, frequency), 
+  geom_point(data = tstat_freq_source_female, 
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency), 
                  color = "Female")) +
   scale_color_manual(values = c("Female" = "red", 
                                 "Male" = "blue")) +
-  scale_x_continuous(labels = abs) +
-  labs(x = "Frequency", 
+  labs(x = "Relative Frequency", 
        y = "Feature", 
        color = "Gender") +
-  theme_minimal()+
+  theme_minimal() +
   theme(legend.position = "top",
-        axis.text.y = element_text(lineheight = 5,
-                                   size = 5))
-ggsave(filename = paste0(outlet,"_freqdiag_gen_ver2.svg"), plot=last_plot())
+        axis.text.y = element_text(lineheight = 5, size = 5))
 
-# Topfeatures
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_relative_m.svg", plot = last_plot())
+
+ggplot() +
+  geom_point(data = tstat_freq_source_female, 
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency), 
+                 color = "Female")) +
+  geom_point(data = tstat_freq_source_male,
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency),
+                 color = "Male")) +
+  scale_color_manual(values = c("Female" = "red", 
+                                "Male" = "blue")) +
+  labs(x = "Relative Frequency", 
+       y = "Feature", 
+       color = "Gender") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_text(lineheight = 10, size = 10))
+
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_relative_f.svg", plot = last_plot())
+
+
+# Topfeatures-----------
 topfeatures(dfmat_source_f, 10)
 topfeatures(dfmat_source_m, 10)
 
