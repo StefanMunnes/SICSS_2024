@@ -299,7 +299,7 @@ fcm_pp_subset_bbc_jso <- fcm_select(bbc_jso_fcm_pp, names(topfeatures(dfm_matrix
 fcm_pp_subset_bbc_bench <- fcm_select(bbc_bench_fcm_pp, names(topfeatures(dfm_matrix_bbc_bench, 30)))
 fcm_pp_subset_bbc <- fcm_select(bbc_fcm_pp, names(topfeatures(dfm_matrix_bbc_bench, 30)))
 
-textplot_network(fcm_pp_subset, edge_color = "skyblue")
+#textplot_network(fcm_pp_subset, edge_color = "skyblue")
 textplot_network(fcm_pp_subset_bbc_jso, edge_color = "blue")
 textplot_network(fcm_pp_subset_bbc_bench, edge_color = "green")
 textplot_network(fcm_pp_subset_bbc, edge_color = "red")
@@ -333,7 +333,6 @@ jso_5_tit5 <- "Trials and Legal Proceedings"
 # Manually define labels for each type
 labels1 <- c(jso_5_tit1, jso_5_tit2, jso_5_tit3, jso_5_tit4, jso_5_tit5)
 
-
 # Count the number of articles for each type
 article_counts <- df_jso_clusters5 %>%
   count(cluster_kmeans5) 
@@ -347,7 +346,7 @@ article_counts <- article_counts %>%
 ggplot(article_counts, aes(y = cluster_kmeans5, x = n)) +
   geom_bar(stat = "identity", fill = "skyblue") +  # Horizontal bars
   labs(y = "", x = "Number of Articles", 
-       title = "BBC Topic Overview") +
+       title = "JSO Topic Overview") +
   scale_y_discrete(labels = labels1) +  # Use manual labels
   theme_minimal()
 ```
@@ -367,6 +366,29 @@ jso_3_tit1 <- "Legal Challenges and Activist Actions"
 jso_3_tit2 <- "Wide-ranging Activism and Advocacy Efforts" 
 jso_3_tit3 <- "Legal Challenges and Activism Against Repressive Laws"
 
+```
+
+```{r}
+# Manually define labels for each type
+labels2 <- c(jso_3_tit1, jso_3_tit2, jso_3_tit3)
+
+# Count the number of articles for each type
+article_counts2 <- df_jso_clusters3 %>%
+  count(cluster_kmeans3) 
+
+
+# Reorder cluster_kmeans5 based on the number of articles (n)
+article_counts2 <- article_counts2 %>%
+  mutate(cluster_kmeans3 = factor(cluster_kmeans3, levels = cluster_kmeans3[order(-n)]))
+
+# Create bar chart with horizontal bars
+
+ggplot(article_counts2, aes(y = cluster_kmeans3, x = n)) +
+  geom_bar(stat = "identity", fill = "skyblue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "JSO Topic Overview") +
+  scale_y_discrete(labels = labels2) +  # Use manual labels
+  theme_minimal()
 ```
 
 ### BBC dataset - 5 clusters
@@ -390,6 +412,28 @@ bbc_5_tit5 <- "Recent Developments in Protests, Elections, and Legal Challenges"
 
 ```
 
+```{r}
+# Manually define labels for each type
+labels3 <- c(bbc_5_tit1, bbc_5_tit2, bbc_5_tit3, bbc_5_tit4, bbc_5_tit5)
+
+# Count the number of articles for each type
+article_counts3 <- df_bbc_clusters5 %>%
+  count(cluster_kmeans5) 
+
+
+# Reorder cluster_kmeans5 based on the number of articles (n)
+article_counts3 <- article_counts3 %>%
+  mutate(cluster_kmeans5 = factor(cluster_kmeans5, levels = cluster_kmeans5[order(-n)]))
+
+# Create bar chart with horizontal bars
+ggplot(article_counts3, aes(y = cluster_kmeans5, x = n)) +
+  geom_bar(stat = "identity", fill = "blue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "BBC Topic Overview") +
+  scale_y_discrete(labels = labels3) +  # Use manual labels
+  theme_minimal()
+```
+
 ### BBC dataset - 3 clusters
 
 ```{r}
@@ -404,4 +448,25 @@ titles_cluster_bbc_23 <- df_bbc_clusters3 %>% filter(cluster_kmeans3 == 3) %>% s
 bbc_3_tit1 <- "Legal and Social Impact of Just Stop Oil Protests"
 bbc_3_tit2 <- "Protests and Legal Challenges in Various Public and Political Settings"
 bbc_3_tit3 <- "Protests, Controversies, and Cultural Highlights"
+```
+
+```{r}
+# Manually define labels for each type
+labels4 <- c(bbc_3_tit1, bbc_3_tit2, bbc_3_tit3)
+
+# Count the number of articles for each type
+article_counts4 <- df_bbc_clusters3 %>%
+  count(cluster_kmeans3) 
+
+# Reorder cluster_kmeans3 based on the number of articles (n)
+article_counts4 <- article_counts4 %>%
+  mutate(cluster_kmeans3 = factor(cluster_kmeans3, levels = cluster_kmeans3[order(-n)]))
+
+# Create bar chart with horizontal bars
+ggplot(article_counts4, aes(y = cluster_kmeans3, x = n)) +
+  geom_bar(stat = "identity", fill = "blue") +  # Horizontal bars
+  labs(y = "", x = "Number of Articles", 
+       title = "BBC - JSO Topic Overview") +
+  scale_y_discrete(labels = labels4) +  # Use manual labels
+  theme_minimal()
 ```
