@@ -48,8 +48,8 @@ source_byauthor <- source %>%
   mutate(first_name = word(author, 1)) %>%
   mutate(name = first_name)
 
-###########################################################################
-# GENDER OF AUTHORS
+
+# GENDER OF AUTHORS ------------------------------------------------
 
 # via gender package
 gendered <- source_byauthor %>% 
@@ -71,11 +71,10 @@ corpus <- corpus(source_gender, text_field = "body")
 # remove these words
 words2remove <-  append(stopwords("en"),c("abortion", "said", " CNN ", "v", " s "))
 
-############################################################################
-# QUANTEDA Visualizations
 
-# wordcloud
-# base 
+# QUANTEDA Visualizations --------------------------------------------------
+
+# basic wordcloud
 dfmat_source <- corpus_subset(corpus) |> 
   tokens(what = "word",
          remove_punct = TRUE, 
@@ -244,3 +243,4 @@ ggplot() +
         axis.text.y = element_text(lineheight = 10, size = 10))
 
 ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_relative_f.svg", plot = last_plot())
+
