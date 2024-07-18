@@ -13,7 +13,6 @@ execute:
   error: false
 ---
 
-
 ```{python}
 import bbc
 import datetime
@@ -37,7 +36,7 @@ library(httr)
 library(jsonlite)
 ```
 
-#Scraping NewsAPI 
+#Scraping NewsAPI
 
 ```{r}
 
@@ -80,7 +79,7 @@ library(RSelenium)
 
 ```
 
-#Scraping the BBC 
+#Scraping the BBC
 
 ```{r}
 scrape_article <- function(url) {
@@ -131,7 +130,6 @@ scrape_article <- function(url) {
 test_article <- scrape_article("https://www.bbc.com/news/articles/crge8vjg8y3o")
 ```
 
-
 ```{r}
 #Used for testing 
 
@@ -155,7 +153,6 @@ for (url in test_page){
 }
 
 ```
-
 
 ```{r}
 # List to store all articles
@@ -286,7 +283,6 @@ rD$server$stop()
 combined_articles <- bind_rows(all_articles)
 ```
 
-
 ```{r}
 #Scraping Just Stop Oil
 
@@ -318,7 +314,6 @@ scrape_article_jso <- function(url) {
 
 ```
 
-
 {r}
 
 # Testing JSO scraping
@@ -328,7 +323,4 @@ test_url <- "https://juststopoil.org/2024/07/11/5-just-stop-oil-supporters-found
 output_test <- scrape_article_jso(test_url)
 ```
 
-
-
-```
-
+\`\`\`
