@@ -2,7 +2,7 @@ library(tidyverse)
 library(rvest)
 
 #urls <- scan("~/SICSS_2024/projects/abortion laws/cnn_urls.csv", character(), quote = "")
-urls <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_urls.csv")
+urls <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_urls2.csv")
 head(urls)
 
 url <- urls$x[[1]]
@@ -17,7 +17,7 @@ url_groups <- split(urls$x, ceiling(seq_along(urls$x) / 300))
 
 
 # cap number of articles 
-row_max <- 2000
+row_max <- 3000
 row_now = 0
 
 
@@ -100,4 +100,4 @@ CNN <- CNN %>%
 
 # save as one file
 # saveRDS(CNN, file = "data/CNN_trump.Rds")
-write_csv(CNN, "~/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
+write_csv(CNN, "~/SICSS_2024/projects/abortion laws/cnn_abortion2.csv")
