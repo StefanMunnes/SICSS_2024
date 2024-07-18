@@ -15,7 +15,7 @@ library(svglite)
 #########################################################################
 
 # read in articles
-source <- read.csv("~/SICSS_2024/projects/abortion laws/cnn_abortion.csv")
+source <- read.csv("~/SICSS/SICSS_2024/projects/abortion laws/prepared_article_data/time_abortion_MP.csv")
 head(source)
 
 # clean row "author"
@@ -48,34 +48,34 @@ source_byauthor <- source %>%
   mutate(first_name = word(author, 1)) %>%
   mutate(name = first_name)
 
-###########################################################################
-# GENDER OF AUTHORS
 
-# via gender package
-gendered <- source_byauthor %>% 
-  rowwise() %>% 
-  do(results = gender(source_byauthor$first_name, method = "ssa")) %>% 
-  do(bind_rows(.$results))
+# GENDER OF AUTHORS ------------------------------------------------
 
-# add gender info to cnn data
-source_gender <- left_join(source_byauthor, gendered)
+# # via gender package
+# gendered <- source_byauthor %>% 
+#   rowwise() %>% 
+#   do(results = gender(source_byauthor$first_name, method = "ssa")) %>% 
+#   do(bind_rows(.$results))
+# 
+# # add gender info to cnn data
+# source_gender <- left_join(source_byauthor, gendered)
+# 
+# # clean data
+# source_gender <- distinct(source_gender)
+# source_gender$year_min = NULL 
+# source_gender$year_max = NULL
 
-# clean data
-source_gender <- distinct(source_gender)
-source_gender$year_min = NULL 
-source_gender$year_max = NULL
 
-# Tokenization Source
+# Tokenization Source--------------------
 corpus <- corpus(source_gender, text_field = "body")
 
 # remove these words
 words2remove <-  append(stopwords("en"),c("abortion", "said", " CNN ", "v", " s "))
 
-############################################################################
-# QUANTEDA Visualizations
 
-# wordcloud
-# base 
+# QUANTEDA Visualizations --------------------------------------------------
+
+# basic wordcloud
 dfmat_source <- corpus_subset(corpus) |> 
   tokens(what = "word",
          remove_punct = TRUE, 
@@ -84,8 +84,9 @@ dfmat_source <- corpus_subset(corpus) |>
          remove_separators = TRUE) |>
   tokens_remove(words2remove) |>
   dfm() |>
-  dfm_trim(min_termfreq = 1000, verbose = FALSE)
+  dfm_trim(min_termfreq = 2000, verbose = FALSE)
 textplot_wordcloud(dfmat_source)
+
 
 # wordcloud gendered
 dfmat_source_gender <- corpus_subset(corpus, 
@@ -98,11 +99,13 @@ dfmat_source_gender <- corpus_subset(corpus,
   tokens_remove(words2remove) |>
   dfm() |>
   dfm_group(groups = gender) |>
-  dfm_trim(min_termfreq = 300, verbose = FALSE)
-  textplot_wordcloud(dfmat_source_gender,
+  dfm_trim(min_termfreq = 1000, verbose = FALSE)
+textplot_wordcloud(dfmat_source_gender,
+                     max_words = 150,
+                     color = c("red", "blue"),
     comparison = TRUE,
-    min_size = 2,
-    max_size = 10)
+    min_size = 0.5,
+    max_size = 2)
 
 # frequency diagramm
 tstat_freq_source <- textstat_frequency(dfmat_source, n = 100)
@@ -180,8 +183,65 @@ tmod_lda <- textmodel_lda(dfmat_source[1:700, ], k = 4)
 terms(tmod_lda, 5)
 #topics(tmod_lda)
 
+# normalise by lenght
+
+
+
+
 # Testing stuff
 #textstat_keyness(dfmat_source, target = docvars(corpus, "gender") == "male") %>%
 #  textplot_keyness()
 
+
+
+# another testing
+
+# Berechnung der Anzahl der Wörter pro Geschlecht
+word_count_female <- sum(ntoken(dfm_subset(dfmat_source, gender == "female")))
+word_count_male <- sum(ntoken(dfm_subset(dfmat_source, gender == "male")))
+
+# Berechnung der relativen Häufigkeit
+tstat_freq_source_female$relative_frequency <- tstat_freq_source_female$frequency / word_count_female
+tstat_freq_source_male$relative_frequency <- tstat_freq_source_male$frequency / word_count_male
+
+# Plotting der relativen Häufigkeit
+ggplot() +
+  geom_point(data = tstat_freq_source_male,
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency),
+                 color = "Male")) +
+  geom_point(data = tstat_freq_source_female, 
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency), 
+                 color = "Female")) +
+  scale_color_manual(values = c("Female" = "red", 
+                                "Male" = "blue")) +
+  labs(x = "Relative Frequency", 
+       y = "Feature", 
+       color = "Gender") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_text(lineheight = 10, size = 10))
+
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_relative_m.svg", plot = last_plot())
+
+ggplot() +
+  geom_point(data = tstat_freq_source_female, 
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency), 
+                 color = "Female")) +
+  geom_point(data = tstat_freq_source_male,
+             aes(x = relative_frequency, 
+                 y = reorder(feature, relative_frequency),
+                 color = "Male")) +
+  scale_color_manual(values = c("Female" = "red", 
+                                "Male" = "blue")) +
+  labs(x = "Relative Frequency", 
+       y = "Feature", 
+       color = "Gender") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_text(lineheight = 10, size = 10))
+
+ggsave(filename = "~/SICSS_2024/projects/abortion laws/plot_cnn_relative_f.svg", plot = last_plot())
 

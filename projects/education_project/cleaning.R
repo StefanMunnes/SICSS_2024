@@ -14,6 +14,8 @@ library(lubridate)
 library(stringr)
 library(xlsx)
 library(Hmisc)
+library(ldatuning)
+
 
 # Pull the Two Sets of Articles and Make a Source Column
 cnn <- readRDS("cnnurls.Rds")
@@ -89,7 +91,7 @@ tokens_fox <- tokens(
 
 tokens_fox <- tokens_tolower(tokens_fox)
 tokens_fox <- tokens_remove(tokens_fox, stopwords("en"), padding = FALSE)
-tokens_fox <- tokens_remove(tokens_fox, c("fox news", "fox", "cnn"))
+tokens_fox <- tokens_remove(tokens_fox, c("fox news", "fox", "cnn", "said"))
 tokens_fox <- tokens_wordstem(tokens_fox, language = "en")
 
   # CNN
@@ -102,7 +104,7 @@ tokens_cnn <- tokens(
 
 tokens_cnn <- tokens_tolower(tokens_cnn)
 tokens_cnn <- tokens_remove(tokens_cnn, stopwords("en"), padding = FALSE)
-tokens_cnn <- tokens_remove(tokens_cnn, c("fox news", "fox", "cnn"))
+tokens_cnn <- tokens_remove(tokens_cnn, c("fox news", "fox", "cnn", "said"))
 tokens_cnn <- tokens_wordstem(tokens_cnn, language = "en")
 
 # Inspecting Results
@@ -116,8 +118,35 @@ dfm_cnn <- dfm(tokens_cnn)
 
   # Figure 1. Main Word Differences Between Corpora
 
-textstat_keyness(dfm, target = docvars(corpus, "source") == "cnn") |>
-  textplot_keyness()
+# Assuming dfm and corpus are already defined
+result <- textstat_keyness(dfm, target = docvars(corpus, "source") == "cnn")
+
+# Create the initial keyness plot
+keyness_plot <- textplot_keyness(result, margin = 0.2, n = 10)
+
+# Print the structure of the plot to verify it's a ggplot object
+str(keyness_plot)
+
+# Customize the plot
+customized_plot <- keyness_plot +
+  scale_fill_manual(
+    name = "Source",
+    values = c("darkred", "steelblue"),
+    labels = c("CNN", "Other")
+  ) +
+  labs(
+    title = "Keyness Plot",
+    x = "Keyness Score",
+    y = "Terms"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12)
+  )
+
+# Print the customized plot
+print(customized_plot)
 
 fcm_fox <- fcm(tokens_fox, context = "window", count = "frequency", window = 3)
 fcm_cnn <- fcm(tokens_cnn, context = "window", count = "frequency", window = 3)
@@ -166,15 +195,118 @@ describe(polarity)
 describe(polarity_fox)
 describe(polarity_cnn)
 
+polarity_cnn$source <- c("cnn")
+polarity_fox$source <- c("fox")
+polarity_cat <- polarity_cnn
+polarity_cat <- rbind(polarity_cat, polarity_fox)
+
   # Figure 3. Sentiment Analysis
 
-  # Add here! :) 
+a <- ggplot(polarity_cat, aes(source, sentiment))
+a + geom_boxplot()
 
 # Topic Models
 
-tmod_lda_10 <- textmodel_lda(dfm[1:700, ], k = 10)
+topsfox <- FindTopicsNumber(
+  dfm_fox,
+  topics = seq(from = 2, to = 15, by = 1),
+  metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 77),
+  mc.cores = 2L,
+  verbose = TRUE
+)
 
-terms(tmod_lda_10, n = 12)
+FindTopicsNumber_plot(topsfox)
+
+topscnn <- FindTopicsNumber(
+  dfm_cnn,
+  topics = seq(from = 2, to = 15, by = 1),
+  metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 77),
+  mc.cores = 2L,
+  verbose = TRUE
+)
+
+FindTopicsNumber_plot(topscnn)
+
+lda_cnn_10 <- textmodel_lda(dfm_cnn, k = 6)
+lda_fox_10 <- textmodel_lda(dfm_fox, k = 6)
+
+terms(lda_cnn_10, n = 12)
+
+topics(lda_cnn_10)
+
+# Picture! 
+top10 <- terms(lda_cnn_10, n = 10) |>
+  as_tibble() |>
+  pivot_longer(cols=starts_with("t"),
+               names_to="topic", values_to="word")
+
+phi <- lda_cnn_10$phi |>
+  as_tibble(rownames="topic")  |>
+  pivot_longer(cols=c(-topic))
+
+
+top10phi <- top10 |>
+  left_join(y=phi, by=c("topic", "word"="name")) ##finally I have a tibble I can work with.
+
+top10phi
+#> # A tibble: 50 × 3
+#>    topic  word       value
+#>    <chr>  <chr>      <dbl>
+#>  1 topic1 crude    0.00509
+#>  2 topic2 today    0.00488
+#>  3 topic3 un       0.00482
+#>  4 topic4 twitter  0.0101 
+#>  5 topic5 patriot  0.00642
+#>  6 topic1 grain    0.00426
+#>  7 topic2 soviet   0.00457
+#>  8 topic3 french   0.00482
+#>  9 topic4 joins    0.00720
+#> 10 topic5 missiles 0.00612
+#> # ℹ 40 more rows
+
+
+## See https://stackoverflow.com/questions/5409776/how-to-order-bars-in-faceted-ggplot2-bar-chart/5414445#5414445
+
+
+sort_facets <- function(df, cat_a, cat_b, cat_out, ranking_var){
+  res <- df |>
+    mutate({{cat_out}}:=factor(paste({{cat_a}}, {{cat_b}}))) |>
+    mutate({{cat_out}}:=reorder({{cat_out}}, rank({{ranking_var}})))
+  
+  return(res)  
+}
+
+
+
+
+dd2 <- sort_facets(top10phi, topic, word, category2, value)
+
+gpl <- ggplot(dd2, aes(y=category2, x=value)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(. ~ topic, scales = "free_y", nrow=3) +
+  scale_y_discrete(labels=dd2$word, breaks=dd2$category2,
+  )+
+  xlab("Probability")+
+  ylab(NULL)
+
+gpl
+
+
+
+
+
+
+
+
+
+
+
+
+###
 
 topics(tmod_lda)
 

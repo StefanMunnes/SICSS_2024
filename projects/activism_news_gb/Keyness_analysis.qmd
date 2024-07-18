@@ -194,10 +194,10 @@ if (n_docs_dfm != length_target_vector) {
 }
 
 # Run textstat_keyness with correct target specification
-result <- textstat_keyness(all_dfmPP, target = target_vector)
+result_all <- textstat_keyness(all_dfmPP, target = target_vector)
 
 # Plot the keyness
-textplot_keyness(result)
+textplot_keyness(result_all)
 ```
 
 ```{}
@@ -226,7 +226,7 @@ textplot_keyness(result)
 
 ```{r}
 
-# # Plot keyness with customization
+# Plot keyness with customization
  keyness_plot <- textplot_keyness(result) +
    theme_minimal() +  
    theme(
@@ -248,7 +248,37 @@ textplot_keyness(result)
    #) +
   guides(color = guide_legend(title = NULL))
 
-# 
-# # Print the customized plot
+# Print the customized plot
+print(keyness_plot)
+```
+
+```{r}
+
+# Assuming 'result' contains your keyness analysis result
+keyness_plot <- textplot_keyness(result) +
+  theme_minimal() +  
+  theme(
+    text = element_text(size = 8),        
+    axis.text.x = element_text(size = 8), 
+    axis.text.y = element_text(size = 8),  
+    legend.text = element_text(size = 8),  
+    plot.title = element_text(size = 12, face = "bold"),  
+    plot.subtitle = element_text(size = 10),
+    plot.margin = margin(t = 10, r = 10, b = 10, l = 10)  # Adjust margins to add more space
+  ) +
+  labs(
+    title = "Keyness Plot of BBC Articles",
+    subtitle = "Comparison of Terms Before and After January 2024",
+    x = "Keyness",  
+    y = "Terms"
+  ) +
+  guides(color = guide_legend(title = NULL))
+
+# Increase the plot height
+keyness_plot <- keyness_plot + theme(
+  plot.margin = unit(c(1, 1, 1, 1), "cm")  # Increase the plot margins
+)
+
+# Print the customized plot
 print(keyness_plot)
 ```

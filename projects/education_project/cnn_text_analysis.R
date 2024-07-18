@@ -392,7 +392,34 @@ ggplot(pca_data, aes(x = PC1, y = PC2, color = cluster)) +
 
 
 
-p <- plot_ly(cnn_data, x=~Sepal.Length, y=~Sepal.Width, 
-             z=~Petal.Length, color=~cluster) %>%
-  add_markers(size=1.5)
-print(p)
+
+sentiment_pipeline <- transformers$pipeline("sentiment-analysis", model = "mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis", tokenizer = "mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis", max_length=512, truncation=T)
+
+
+body_sentiment_fox_ls <- sentiment_pipeline(cnn_data[cnn_data$cluster_kmeans==3,]$body)
+body_sentiment_fox_1 <- sapply(body_sentiment_fox_ls, function(x) x$label)
+
+fox_1_sentiment <- as.data.frame(body_sentiment_fox_1)
+
+
+
+sentiment_counts <- fox_1_sentiment|>count(body_sentiment_fox_1)
+
+colnames(sentiment_counts) <- c("Sentiment", "Count")
+sentiment_counts_df <- sentiment_counts
+
+sentiment_counts_df$Sentiment <- unlist(sentiment_counts_df$Sentiment)
+sentiment_counts_df$Sentiment <- as.factor(sentiment_counts_df$Sentiment)
+sentiment_counts_df$Count <- as.numeric(sentiment_counts_df$Count)
+
+ggplot(data = sentiment_counts_df, aes(x = Sentiment, y = Count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Sentiment Distribution of CNN articles", x = "Sentiment", y = "Count") +
+  theme_minimal()
+
+#Visualize sentiments in Pie chart
+ggplot(data = sentiment_counts_df, aes(x = "", y = Count, fill = Sentiment)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "Sentiment CNN cluster 3 articles - finnews", fill = "Sentiment") +
+  theme_minimal()
