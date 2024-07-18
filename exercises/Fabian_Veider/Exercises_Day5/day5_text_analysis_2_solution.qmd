@@ -14,16 +14,18 @@ execute:
   error: false
 ---
 
-
 # Data preparation
 
 Packages you will (probably) need:
+
 ```{r}
+#install.packages("factoextra")
 library(dplyr)
 library(reticulate)
 ```
 
-Load the data: 
+Load the data:
+
 ```{r}
 data_fox <- readRDS("data/FOX.Rds")
 data_cnn <- readRDS("data/CNN.Rds")
@@ -35,6 +37,7 @@ data_news <- bind_rows(
 ```
 
 Use a smaller sample:
+
 ```{r}
 data_news <- data_news[1:20, ]
 ```
@@ -43,11 +46,9 @@ API-Key: 1. part in file + 2. part: **DahpUIy8A**
 
 Store the full key in your local environment and load with `{r}Sys.getenv("openai")`
 
-
 # Sentence Embeddings and Clustering
 
-We want to cluster our data into groups according to similar topics. To do this, we can calculate the similarity (or distance) of the article headlines. To do this, we need to calculate embeddings of the headings that encapsulate the meaning.
-You can choose between different providers of embedding models. Choose your provider, a good model and the implementation in Python and/or R.
+We want to cluster our data into groups according to similar topics. To do this, we can calculate the similarity (or distance) of the article headlines. To do this, we need to calculate embeddings of the headings that encapsulate the meaning. You can choose between different providers of embedding models. Choose your provider, a good model and the implementation in Python and/or R.
 
 ## Sentence Embeddings
 
@@ -60,16 +61,18 @@ You can choose between different providers of embedding models. Choose your prov
 ```{r}
 openai <- import("openai")
 
-client <- openai$OpenAI(api_key = Sys.getenv("openai"))
+client <- openai$OpenAI(api_key = Sys.getenv("api_key"))
 ```
 
 Function for API call in **Python**:
+
 ```{python}
 def get_embeddings(text, model="text-embedding-3-small"):
   return client.embeddings.create(input = [text], model=model).data[0].embedding
 ```
 
 Function for API call in **R**:
+
 ```{r}
 get_embeddings <- function(text, model = "text-embedding-3-small") {
   client$embeddings$create(input = text, model = model)$data[[1]]$embedding
@@ -77,18 +80,19 @@ get_embeddings <- function(text, model = "text-embedding-3-small") {
 ```
 
 Run API call function and transform list to matrix:
+
 ```{r}
 headlines_embeddings_ls <- lapply(data_news$title, get_embeddings)
 
 headlines_embeddings <- do.call(rbind, headlines_embeddings_ls)
 ```
 
-
 ### Huggingface
 
 *NOTE: install (with conda) and import sentence-transformers python library*
 
 Workflow in **Python**:
+
 ```{python}
 from sentence_transformers import SentenceTransformer
 
@@ -98,6 +102,7 @@ headlines_embeddings = model.encode(r.data_news["title"])
 ```
 
 Workflow in **R**:
+
 ```{r}
 sentence_transformers <- import("sentence_transformers")
 
@@ -106,12 +111,9 @@ model <- sentence_transformers$SentenceTransformer("paraphrase-MiniLM-L6-v2")
 headlines_embeddings <- model$encode(data_news$title)
 ```
 
-
 ## Clustering
 
-There are two main families of clustering algorithms:
-  1. kmeans, where you specify the number of clusters in advance
-  2. hierarchical clustering, where you set a cut-off value for the maximum distance (or minimum similarity) for clustering
+There are two main families of clustering algorithms: 1. kmeans, where you specify the number of clusters in advance 2. hierarchical clustering, where you set a cut-off value for the maximum distance (or minimum similarity) for clustering
 
 ### kmeans clustering
 
@@ -122,6 +124,7 @@ data_news$cluster_kmeans <- cluster_kmeans$cluster
 ```
 
 Visually inspect hierarchical clusters:
+
 ```{r}
 factoextra::fviz_cluster(cluster_kmeans,
   data = headlines_embeddings,
@@ -142,25 +145,22 @@ data_news$cluster_hier <- cutree(hcluster, h = 0.3)
 ```
 
 Visually inspect hierarchical clusters:
+
 ```{r}
 hcluster$labels <- data_news$title
 
 plot(hcluster, hang = -1)
 ```
 
-
-
 # Sentiment Analysis and Visualisation
 
-We want to extract the sentiment of the headlines in order to recognize patterns in the reporting. Let's output the sentiment in the three categories Positive, Negative and Neutral. 
-You can choose between different language model providers. Choose your provider, a suitable model and the implementation in Python and/or R.
+We want to extract the sentiment of the headlines in order to recognize patterns in the reporting. Let's output the sentiment in the three categories Positive, Negative and Neutral. You can choose between different language model providers. Choose your provider, a suitable model and the implementation in Python and/or R.
 
 ## Sentiment Analysis
 
 ### OpenAI
 
 *NOTE: set and get OpenAI API key for API call*
-
 
 Workflow for **Python**:
 
@@ -169,10 +169,11 @@ Workflow for **Python**:
 ```{r}
 openai <- import("openai")
 
-client <- openai$OpenAI(api_key = Sys.getenv("openai"))
+client <- openai$OpenAI(api_key = Sys.getenv("api_key"))
 ```
 
 Function for API call:
+
 ```{python}
 def get_sentiment(message):
 
@@ -193,11 +194,12 @@ def get_sentiment(message):
     return sentiment
 ```
 
-
 Workflow in **R**
 
 Using tidychatmodels, setting API key and system message:
+
 ```{r}
+install.packages("tidychatmodels")
 library(tidychatmodels)
 
 chat_model <- create_chat("openai", Sys.getenv("openai")) |>
@@ -212,6 +214,7 @@ chat_system <- chat_model |>
 ```
 
 Function for API call:
+
 ```{r}
 get_sentiment <- function(txt) {
   Sys.sleep(2)
@@ -229,6 +232,7 @@ get_sentiment <- function(txt) {
 ```
 
 Run API call function (Python or R), transform list to vector, and add to data:
+
 ```{r}
 titles_sentiment <- lapply(data_news$title, get_sentiment)
 
@@ -236,7 +240,6 @@ titles_sentiment <- unlist(titles_sentiment)
 
 data_news$sentiment_openai <- titles_sentiment
 ```
-
 
 ### Huggingface
 
@@ -251,6 +254,7 @@ titles_sentiment_ls = sentiment_pipeline([str(i) for i in r.data_news['title'].t
 ```
 
 Workflow in **R**:
+
 ```{r}
 transformers <- import("transformers")
 
@@ -259,8 +263,8 @@ sentiment_pipeline <- transformers$pipeline("sentiment-analysis", model = "ahmed
 titles_sentiment_ls <- sentiment_pipeline(data_news$title)
 ```
 
-
 Transform response from json to vector and add to data.frame
+
 ```{r}
 # titles_sentiment <- sapply(py$titles_sentiment_ls, function(x) x$label)
 titles_sentiment <- sapply(titles_sentiment_ls, function(x) x$label)

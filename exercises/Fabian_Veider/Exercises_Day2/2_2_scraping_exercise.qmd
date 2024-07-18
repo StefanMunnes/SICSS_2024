@@ -48,7 +48,7 @@ This task is basically the testing phase for task 4. You go to the webpage, in t
 
 ```{r}
 # URL of the article
-url <- "https://time.com/6071765/what-can-i-do-to-fight-climate-change/"
+url <- "https://time.com/search/?q=%22just%20stop%20oil%22%20"
 
 # Read the HTML content of the webpage
 webpage <- read_html(url)
@@ -156,8 +156,8 @@ all_articles <- list()
 # https://time.com/search/?q=polarization
 # https://time.com/search/?q=climate&page=
 # Loop through the first 5 pages of search results
-for (i in 1:5) {
-  search_url <- paste0("https://time.com/search/?q=polarization&page=", i)
+for (i in 1:2) {
+  search_url <- paste0("https://time.com/search/?q=%22just%20stop%20oil%22%20&page=", i)
   print(paste("Scraping search results page:", search_url))
   
   # Get article URLs from the search results page
