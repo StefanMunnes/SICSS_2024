@@ -263,3 +263,4 @@ all_article_info1 <- left_join(all_article_info1,mj_names_gen)
 all_article_info2 <- all_article_info1 %>%
   mutate_all(~ ifelse(. == "", NA, .)) %>%
   filter(!is.na(gender) & !is.na(body))
+
