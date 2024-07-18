@@ -1,0 +1,176 @@
+---
+title: "EurLex Fun"
+authors: Paula & Robert
+date: July 18, 2024
+format: revealjs
+editor: visual
+incremental: true
+---
+
+## Research Angle
+
+-   Interested in looking at how different policy narratives/positions/priorities may change or evolve over time
+
+-   Interested in EU politics and EU institutions
+
+-   Substantive policy focus: migration (Paula), digitization (Rob)
+
+## Initial Research Question
+
+-   The EU is often portrayed in certain academic + policy discourses as a 'rights' driven actor
+
+    -   But the reality is more complicated, and in recent years complex politics driving a shift away from 'rights' and more towards 'security' on certain issues
+
+-   Q: Can we use text-as-data approaches to see substantive and/or discursive changes in EU policy documents?
+
+## Data Collection
+
+Potential Universe of Textual Material
+
+-   EU Press Corner (press releases, speeches, 'statements', policy papers)
+-   EurLex (EU legislative documents, legal documents, a range of non-legeslative documents)
+-   Academic datasets (EU speech corpus, EU ParlLawSpeech)
+
+## EurLex
+
+![](images/eurlex_img.png){fig-align="center" width="100%"}
+
+## Data Collection Strategy
+
+Migration:
+
+-   EurLex R package, collect metadata by policy area, 'sector tags', and EurVoc policy tags (total n = 2877)
+
+-   Use metadata to pull full documents (EurLex package via EurLex API)
+
+Digital:
+
+-   Used EurLex website's advanced search function w. boolean query "child safety" AND "internet" to get metadata (n = 82)
+
+-   Eurlex package to pull text of full documents by CELEX number
+
+## Analysis Methods (1/3)
+
+-   Structural topic models
+
+-   Seeded/keyword assisted topic models
+
+-   Word embeddings
+
+-   Latent semantic scaling
+
+## Analysis Methods (2/3)
+
+> although topic models can **explore themes of a corpus** (e.g., Roberts et al. 2014), **they do not necessarily measure specific concepts** of substantive interest. Although researchers have also relied upon topic models for measurement purposes (e.g., Bagozzi and Berliner 2018; Blaydes, Grimmer, and McQueen 2018; Barberá et al. 2019; Dietrich, Hayes, and O’brien 2019; Grimmer 2013; Martin and McCrain 2019), they acknowledge that these **fully automated models often inadvertently create multiple topics with similar content** and combine different themes into a single topic...
+>
+> (Eshima et al. 2024, p. 730)
+
+## Analysis Methods (3/3)
+
+![](images/keyatm-01.jpg)
+
+## Results (Rob 1/3)
+
+-   start with selecting keywords (exploratory, based on domain knowledge) around 4 topics
+
+    -   Human Rights
+
+    -   Child Protection
+
+    -   Child Abuse (CSAM)
+
+    -   Product Safety
+
+## Results (Rob 2/3)
+
+![](images/rg_keywords-01.jpg)
+
+## Results (Rob 3/3)
+
+![](images/rg_proportions-01.jpg)
+
+## Results (Paula 1/10)
+
+Baseline: stm with 20 topics
+
+![](images/baseline_plot_20_stm-01.png)
+
+## Results (Paula 2/10)
+
+First keyword assisted model: selected keywords based on the stm (some more pre-processing after this)
+
+![](images/m1_keywords_try_3-01.png)
+
+## Results (Paula 3/10)
+
+Topic proportions first model
+
+![](images/m1_topic_proportions-01.png)
+
+## Results (Paula 4/10)
+
+Time trend first model
+
+![](images/m2_Timetrend_topics-01.png)
+
+## Results (Paula 5/10)
+
+Second model: keywords selected based on research interest (rights, third countries, return)
+
+``` r
+keywords_free <- list(
+  Security = c("security", "criminal"),#  Highest Prob T12
+  Protection = c("application", "applicant",
+                 "asylum","protection", "international_protection",  "subsidiary_protection", "resettlement",
+                 "minor",  "unaccompanied" ), #  change later to "unaccompanied_minor"
+  Rights_subst = c ("fundamental_rights", "human_rights"),
+  Rights_proc = c( "judicial", "due", "appeal", "procedure"), # add judicial review and legal remedy later after preprocessing update
+  Borders = c ("external_borders", "border_management", "frontex"), # add later (after preprocessing update:  "border and coast guard")
+  Third_ctrs = c ("third_countr", "third_countries", "third_country", "turkey", "africa", "cooperation", "support"), # ajust later (after preprocessing update:  (unsure hwo the words are stemmed)
+  Return = c ("return", "voluntary_return", "removal", "departure",
+              "return_decision", "detention",
+              "return_directive",
+              "readmission")) # return-related words selected based on hunch / domain knowledge and readmission topic
+```
+
+## Results (Paula 6/10)
+
+-   Second model: keywords selected based on research interest (rights, third countries, return)
+
+-   subsumes "uninteresting" topics from baseline model into topics of interest
+
+    -   "Integration" keywords now part of "rights" topic
+
+## Results (Paula 7/10)
+
+![](images/m2_topic_proportions.png)
+
+## Results (Paula 8/10)
+
+Second model: keywords selected based on research interest (rights, third countries, return)
+
+![](images/m2_Timetrend_topics-02.png)
+
+## Results (Paula 9/10)
+
+-   Third model: only "preparatory documents" (proposals, communications, white papers...) issued by the Commission; same topic selection as model 2
+
+-   Interesting: "right" topics less prevalent in Commission documents! But needs further validation (and keyword selection)
+
+## Results (Paula 10/10)
+
+![](images/m3_COM_topic_proportions-01.png)
+
+## Reflections & Problems
+
+Research Design
+
+-   Is EurLex the best source for the kinds of documents we want?
+
+-   Sampling? (diversity of documents in corpora, topic selection...)
+
+Methods
+
+-   Difficulties in getting 'fancier' approaches to work (BERTopic...) - but are they better? Mixed methods?
+
+-   Keyword Selection, pre-processing questions...
